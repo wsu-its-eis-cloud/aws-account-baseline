@@ -1,6 +1,6 @@
 ﻿**********************
 Windows PowerShell transcript start
-Start time: 20200416215848
+Start time: 20200417091730
 Username: AD\bbonner
 RunAs User: AD\bbonner
 Configuration Name: 
@@ -16,10 +16,9 @@ WSManStackVersion: 3.0
 PSRemotingProtocolVersion: 2.3
 SerializationVersion: 1.1.0.1
 **********************
-Transcript started, output file is Create-AWSDefaultIAM.ps1-1587099528.transcript
-	 Creating custom policy objects...
-	 Waiting for objects to propogate...
+Transcript started, output file is Config-AWSDefaultIAMSettings.ps1-1587140250.transcript
+	 Configuring IAM account settings...
 **********************
 Windows PowerShell transcript end
-End time: 20200416215900
+End time: 20200417091731
 **********************
