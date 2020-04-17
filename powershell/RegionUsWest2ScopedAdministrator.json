@@ -1,0 +1,217 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "cloudtrail:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "cloudwatch:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": "config:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": "detective:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": "fms:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor5",
+            "Effect": "Allow",
+            "Action": "lambda:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor6",
+            "Effect": "Allow",
+            "Action": "license-manager:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor7",
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor8",
+            "Effect": "Allow",
+            "Action": "organizations:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor9",
+            "Effect": "Allow",
+            "Action": "pricing:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": "securityhub:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iam:CreateServiceLinkedRole",
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "iam:AWSServiceName": "securityhub.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor11",
+            "Effect": "Allow",
+            "Action": [
+                "sns:CreatePlatformApplication",
+                "sns:SetSMSAttributes",
+                "sns:ListTopics",
+                "sns:GetPlatformApplicationAttributes",
+                "sns:CreatePlatformEndpoint",
+                "sns:Unsubscribe",
+                "sns:GetSubscriptionAttributes",
+                "sns:ListSubscriptions",
+                "sns:CheckIfPhoneNumberIsOptedOut",
+                "sns:OptInPhoneNumber",
+                "sns:DeleteEndpoint",
+                "sns:SetEndpointAttributes",
+                "sns:ListPhoneNumbersOptedOut",
+                "sns:ListEndpointsByPlatformApplication",
+                "sns:GetEndpointAttributes",
+                "sns:SetSubscriptionAttributes",
+                "sns:DeletePlatformApplication",
+                "sns:SetPlatformApplicationAttributes",
+                "sns:GetSMSAttributes",
+                "sns:ListPlatformApplications"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor12",
+            "Effect": "Allow",
+            "Action": "sns:*",
+            "Resource": "arn:aws:sns:*:*:*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        }
+    ]
+}

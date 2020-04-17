@@ -1,0 +1,37 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "securityhub:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-east-1"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "cloudwatch:*",
+            "Resource": [
+                "arn:aws:cloudwatch::*:dashboard/*",
+                "arn:aws:cloudwatch:*:*:insight-rule/*",
+                "arn:aws:cloudwatch:*:*:alarm:*"
+            ],
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-east-1"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        }
+    ]
+}
