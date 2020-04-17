@@ -45,6 +45,7 @@ if($globalSession -eq $null) {
     return $false
 }
 
+# Creating session hashtable for parameter splatting
 $session = @{
     'AccessKey'    = $globalSession.AccessKeyId;
     'SecretKey'    = $globalSession.SecretAccessKey;

@@ -33,69 +33,76 @@ $transcriptName = ("{0}-{1}.transcript" -f $MyInvocation.MyCommand.Name, [DateTi
 Start-Transcript -Path $transcriptName
 
 # Retrieve specified AWS STS session
-$session = $null
-$expression = ("`$session = `$global:{0}" -f $sessionName)
+$globalSession = $null
+$expression = ("`$globalSession = `$global:{0}" -f $sessionName)
 Invoke-Expression -Command $expression
 
 # If the session is null, return false
-if($session -eq $null) {
+if($globalSession -eq $null) {
     Write-Output ("`t Failed to retrieve specified AWS session.")
 
     Stop-Transcript
     return $false
 }
 
+# Creating session hashtable for parameter splatting
+$session = @{
+    'AccessKey'    = $globalSession.AccessKeyId;
+    'SecretKey'    = $globalSession.SecretAccessKey;
+    'SessionToken' = $globalSession.SessionToken;
+}
+
 Write-Output ("`t Creating custom policy objects...")
 
 # Create scoped us-west-2 admin policy
-$usWestAdmin = New-IAMPolicy -PolicyName RegionUsWest2ScopedAdministrator -PolicyDocument (Get-content -Raw RegionUsWest2ScopedAdministrator.json) -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+$usWestAdmin = New-IAMPolicy -PolicyName RegionUsWest2ScopedAdministrator -PolicyDocument (Get-content -Raw RegionUsWest2ScopedAdministrator.json) @session -Force
 
 # Create cloudwatch admin policy
-$cloudwatchAdmin = New-IAMPolicy -PolicyName RegionUsEast1CloudWatchAdmin -PolicyDocument (Get-content -Raw RegionUsEast1CloudWatchAdmin.json) -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+$cloudwatchAdmin = New-IAMPolicy -PolicyName RegionUsEast1CloudWatchAdmin -PolicyDocument (Get-content -Raw RegionUsEast1CloudWatchAdmin.json) @session -Force
 
 # Create disable all region policy
-$disableRegionsPolicy = New-IAMPolicy -PolicyName RegionDisableAll -PolicyDocument (Get-content -Raw RegionDisableAll.json) -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+$disableRegionsPolicy = New-IAMPolicy -PolicyName RegionDisableAll -PolicyDocument (Get-content -Raw RegionDisableAll.json) @session -Force
 
 # Create disable all region policy
-$accountPortalPolicy = New-IAMPolicy -PolicyName AccountPortalFullAccess -PolicyDocument (Get-content -Raw AccountPortalFullAccess.json) -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+$accountPortalPolicy = New-IAMPolicy -PolicyName AccountPortalFullAccess -PolicyDocument (Get-content -Raw AccountPortalFullAccess.json) @session -Force
 
 # Create admin group
-$adminGroup = New-IAMGroup -GroupName Administrators -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+$adminGroup = New-IAMGroup -GroupName Administrators @session -Force
 
 # Create financial admin group
-$financialAdminGroup = New-IAMGroup -GroupName FinancialAdministrators -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+$financialAdminGroup = New-IAMGroup -GroupName FinancialAdministrators @session -Force
 
 # Create support access group
-$supportAccessGroup = New-IAMGroup -GroupName SupportAccess -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+$supportAccessGroup = New-IAMGroup -GroupName SupportAccess @session -Force
 
 # Retrieve account ID
-$account = (Get-STSCallerIdentity -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken).Account
+$account = (Get-STSCallerIdentity @session).Account
 
 # Create aupport access role
-$supportAccessRole = New-IAMRole -RoleName SupportAccess -AssumeRolePolicyDocument (Get-content -Raw SupportAccessRoleTrustPolicyDocument.json).Replace("{0}", $account) -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken
+$supportAccessRole = New-IAMRole -RoleName SupportAccess -AssumeRolePolicyDocument (Get-content -Raw SupportAccessRoleTrustPolicyDocument.json).Replace("{0}", $account) @session
 
 # Pause to allow custom objects to propogate
 Write-Output ("`t Waiting for objects to propogate...")
 Start-Sleep -Seconds 5
 
 # Register policies on administrators group
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $usWestAdmin.Arn -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $cloudwatchAdmin.Arn -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $disableRegionsPolicy.Arn -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/IAMFullAccess -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/AmazonS3FullAccess -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/job-function/Billing -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $usWestAdmin.Arn @session -Force
+Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $cloudwatchAdmin.Arn @session -Force
+Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $disableRegionsPolicy.Arn @session -Force
+Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/IAMFullAccess @session -Force
+Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/AmazonS3FullAccess @session -Force
+Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/job-function/Billing @session -Force
 
 # Register policies on financial administrators group
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn $accountPortalPolicy.Arn -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/job-function/Billing -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn $accountPortalPolicy.Arn -AccessKey @session -Force
+Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/job-function/Billing @session -Force
 
 # Register policies on support access group
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/job-function/SupportUser -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/job-function/SupportUser @session -Force
+Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess @session -Force
 
 # Register policies on support access role
-Register-IAMRolePolicy -RoleName SupportAccess -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken
+Register-IAMRolePolicy -RoleName SupportAccess -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess @session
 
 Write-Output ("`t Policies successfully attached.")
 

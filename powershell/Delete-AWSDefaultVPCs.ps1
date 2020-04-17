@@ -61,23 +61,30 @@ if(!$force) {
 }
 
 # Retrieve specified AWS STS session
-$session = $null
-$expression = ("`$session = `$global:{0}" -f $sessionName)
+$globalSession = $null
+$expression = ("`$globalSession = `$global:{0}" -f $sessionName)
 Invoke-Expression -Command $expression
 
 # If the session is null, return false
-if($session -eq $null) {
+if($globalSession -eq $null) {
     Write-Output ("`t Failed to retrieve specified AWS session.")
 
     Stop-Transcript
     return $false
 }
 
+# Creating session hashtable for parameter splatting
+$session = @{
+    'AccessKey'    = $globalSession.AccessKeyId;
+    'SecretKey'    = $globalSession.SecretAccessKey;
+    'SessionToken' = $globalSession.SessionToken;
+}
+
 # Search each region for default VPC's to remove
-$regions = Get-EC2Region -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken
+$regions = Get-EC2Region @session
 foreach($region in $regions) {
 
-    $vpcs = Get-EC2Vpc -Region $region.RegionName -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken
+    $vpcs = Get-EC2Vpc -Region $region.RegionName @session
     foreach($vpc in $vpcs) {
 
         if ($vpc.Tags.Count -ne 0 -AND $vpc.CidrBlock.ToString() -ne "172.31.0.0/16") {
@@ -94,14 +101,14 @@ foreach($region in $regions) {
 
         # Remove IGW's
         Write-Output ("`t")
-        $igws = Get-EC2InternetGateway -Region $region.RegionName -Filter $filters -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken
+        $igws = Get-EC2InternetGateway -Region $region.RegionName -Filter $filters @session
         foreach($igw in $igws) {
 
             Write-Output ("`t Dismounting IGW: {0}." -f $igw.InternetGatewayId)
-            Dismount-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId -VpcId $vpc.VpcId  -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+            Dismount-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId -VpcId $vpc.VpcId  @session -Force
 
             Write-Output ("`t Removing IGW: {0}." -f $igw.InternetGatewayId)
-            Remove-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+            Remove-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId @session -Force
         }
 
         # Rebuild filters targeting subnet and routetable filters
@@ -112,15 +119,15 @@ foreach($region in $regions) {
         $filters += $filter
 
         # Remove subnets
-        $subnets = Get-EC2Subnet -Region $region.RegionName -Filter $filters -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken
+        $subnets = Get-EC2Subnet -Region $region.RegionName -Filter $filters @session
         foreach($subnet in $subnets) {
             Write-Output ("`t Removing subnet: {0}." -f $subnet.SubnetId)
-            Remove-EC2Subnet -Region $region.RegionName -SubnetId $subnet.SubnetId -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+            Remove-EC2Subnet -Region $region.RegionName -SubnetId $subnet.SubnetId @session -Force
         }
 
         # Remove VPC
         Write-Output ("`t Removing VPC: {0}." -f $vpc.VpcId)
-        Remove-EC2Vpc -VpcId $vpc.VpcId -Region $region.RegionName -AccessKey $session.AccessKeyId -SecretKey $session.SecretAccessKey -SessionToken $session.SessionToken -Force
+        Remove-EC2Vpc -VpcId $vpc.VpcId -Region $region.RegionName @session -Force
     }
 }
 
