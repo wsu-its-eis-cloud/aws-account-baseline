@@ -32,6 +32,12 @@ if ($help) {
     return $false
 }
 
+# Prompt for environment if not valid value
+if ($environment -ne "production" -and $environment -ne "staging") {
+	$environment = Read-Host "Enter a valid environment [production or staging]"
+}
+$environment = $environment.ToLower()
+
 # navigate to library root
 cd $PSScriptRoot
 
