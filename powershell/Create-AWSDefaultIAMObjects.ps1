@@ -79,7 +79,7 @@ $supportAccessGroup = New-IAMGroup -GroupName SupportAccess @session -Force
 $account = (Get-STSCallerIdentity @session).Account
 
 # Create aupport access role
-$supportAccessRole = New-IAMRole -RoleName SupportAccess -AssumeRolePolicyDocument (Get-content -Raw SupportAccessRoleTrustPolicyDocument.json).Replace("{0}", $account) @session
+$supportAccessRole = New-IAMRole -RoleName SupportAccess -AssumeRolePolicyDocument (Get-content -Raw SupportAccessRoleTrustPolicyDocument.json).Replace("{accountid}", $account) @session
 
 # Pause to allow custom objects to propogate
 Write-Output ("`t Waiting for objects to propogate...")

@@ -85,6 +85,17 @@ if (!(Get-Module -ListAvailable -Name AWS.Tools.EC2) -or $force) {
     $changesMade = $true
 }
 
+# Check for modules required by this library
+if (!(Get-Module -ListAvailable -Name AWS.Tools.S3) -or $force) {
+    if($force) {
+        Install-Module -Name AWS.Tools.S3 -AllowClobber -Force
+    } else {
+        Install-Module -Name AWS.Tools.S3
+    }
+
+    $changesMade = $true
+}
+
 if($changesMade) {
     Write-Output "Modules successfully installed and updated."
 }else {
