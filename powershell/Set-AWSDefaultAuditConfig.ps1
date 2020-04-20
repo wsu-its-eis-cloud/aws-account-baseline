@@ -68,31 +68,81 @@ $session = @{
     'SessionToken' = $globalSession.SessionToken;
 }
 
-Write-Output ("`t Creating S3 bucket for config logs...")
 
-# Create bucket
+# Test if bucket exists
 $account = (Get-STSCallerIdentity @session).Account
 $bucketName = ("config-bucket-{0}" -f $account)
-$bucket = New-S3Bucket -BucketName $bucketName -CannedACLName ([Amazon.S3.S3CannedACL]::BucketOwnerFullControl) @session
+$bucket = Get-S3Bucket -BucketName $bucketName @session
 
-# Let bucket creation take effect and propogate
-Write-Output ("`t Letting S3 bucket propogate...")
-Start-Sleep 5
-Write-Output ("`t Securing S3 bucket...")
+if(!$bucket) {
+    # Create bucket
+    Write-Output ("`t Creating S3 bucket for config logs...")
+    $bucket = New-S3Bucket -BucketName $bucketName -CannedACLName ([Amazon.S3.S3CannedACL]::BucketOwnerFullControl) @session
 
-# Configure bucket policy
-Add-S3PublicAccessBlock -BucketName $bucketName -PublicAccessBlockConfiguration_BlockPublicAcl $true -PublicAccessBlockConfiguration_BlockPublicPolicy $true -PublicAccessBlockConfiguration_IgnorePublicAcl $true -PublicAccessBlockConfiguration_RestrictPublicBucket $true @session
-Write-S3BucketPolicy -BucketName $bucketName -Policy (Get-content -Raw S3ConfigBucketPolicy.json).Replace("{accountid}", $account) @session
-Write-S3BucketVersioning -BucketName $bucketName -VersioningConfig_Status Enabled @session
+    # Let bucket creation take effect and propogate
+    Write-Output ("`t Letting S3 bucket propogate...")
+    Start-Sleep 5
+    Write-Output ("`t Securing S3 bucket...")
 
-# Configure bucket encryption
-$s3EncryptionRule = New-Object -TypeName Amazon.S3.Model.ServerSideEncryptionRule
-$s3EncryptionDefault = New-Object -TypeName Amazon.S3.Model.ServerSideEncryptionByDefault
-$s3EncryptionDefault.ServerSideEncryptionAlgorithm = "AES256"
-$s3EncryptionRule.ServerSideEncryptionByDefault = $s3EncryptionDefault
-Set-S3BucketEncryption -BucketName $bucketName -ServerSideEncryptionConfiguration_ServerSideEncryptionRule $s3EncryptionRule @session
+    # Configure bucket policy
+    Add-S3PublicAccessBlock -BucketName $bucketName -PublicAccessBlockConfiguration_BlockPublicAcl $true -PublicAccessBlockConfiguration_BlockPublicPolicy $true -PublicAccessBlockConfiguration_IgnorePublicAcl $true -PublicAccessBlockConfiguration_RestrictPublicBucket $true @session
+    Write-S3BucketPolicy -BucketName $bucketName -Policy (Get-content -Raw WsuS3ConfigBucketPolicy.json).Replace("{accountid}", $account) @session
+    Write-S3BucketVersioning -BucketName $bucketName -VersioningConfig_Status Enabled @session
 
-Write-Output ("`t S3 Bucket created.")
+    # Configure bucket encryption
+    $s3EncryptionRule = New-Object -TypeName Amazon.S3.Model.ServerSideEncryptionRule
+    $s3EncryptionDefault = New-Object -TypeName Amazon.S3.Model.ServerSideEncryptionByDefault
+    $s3EncryptionDefault.ServerSideEncryptionAlgorithm = "AES256"
+    $s3EncryptionRule.ServerSideEncryptionByDefault = $s3EncryptionDefault
+    Set-S3BucketEncryption -BucketName $bucketName -ServerSideEncryptionConfiguration_ServerSideEncryptionRule $s3EncryptionRule @session
+
+    Write-Output ("`t S3 Bucket created.")
+}
+
+# Build Config recorder and channel
+Write-Output ("`t Building config recorder and delivery channel...")
+$cfgRecorder = Get-CFGConfigurationRecorder @session
+if(!$cfgRecorder) {
+    $roleArn = ("arn:aws:iam::{0}:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig" -f $account)
+    $cfgRecorder = Write-CFGConfigurationRecorder -ConfigurationRecorderName default -RecordingGroup_AllSupported $true -RecordingGroup_IncludeGlobalResourceType $true -ConfigurationRecorder_RoleARN $roleArn @session
+}
+
+$cfgChannel = Get-CFGDeliveryChannel @session
+if(!$cfgChannel) {
+    $cfgChannel = Write-CFGDeliveryChannel -DeliveryChannelName default -DeliveryChannel_S3BucketName $bucketName @session
+}
+
+# Start the recorder if it is stopped
+$cfgRecorderStatus = Get-CFGConfigurationRecorderStatus @session
+if($cfgRecorderStatus.Recording) {
+    Start-CFGConfigurationRecorder -ConfigurationRecorderName $cfgRecorder.Name @session
+}
+
+# Set the config rules
+Write-Output ("`t Building config compliance rules...")
+$owner = [Amazon.ConfigService.Owner]::AWS
+Import-Csv AWSConfigRules.csv | ForEach-Object {
+    
+    try {
+        $cfgRule = Get-CFGConfigRule -ConfigRuleName $_.ConfigRuleName @session
+    } catch {
+        $cfgRule = $false
+    }
+
+    if(!$cfgRule) {
+        $cfgRule = @{
+            'Source_Owner'              = $owner;
+            'ConfigRule_ConfigRuleName' = $_.ConfigRuleName;
+            'Source_SourceIdentifier'   = $_.ConfigRuleIdentity;
+            'ConfigRule_Description'    = $_.Description;
+            'ConfigRule_InputParameter' = $_.InputParameters.Replace("{accountid}", $account);
+        }
+
+        Write-CFGConfigRule @cfgRule @session
+    }
+}
+
+
 
 # Stop the Transcript
 Stop-Transcript

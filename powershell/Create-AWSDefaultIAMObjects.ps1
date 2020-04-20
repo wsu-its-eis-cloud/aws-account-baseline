@@ -52,34 +52,30 @@ $session = @{
     'SessionToken' = $globalSession.SessionToken;
 }
 
-Write-Output ("`t Creating custom policy objects...")
-
-# Create scoped us-west-2 admin policy
-$usWestAdmin = New-IAMPolicy -PolicyName RegionUsWest2ScopedAdministrator -PolicyDocument (Get-content -Raw RegionUsWest2ScopedAdministrator.json) @session -Force
-
-# Create cloudwatch admin policy
-$cloudwatchAdmin = New-IAMPolicy -PolicyName RegionUsEast1CloudWatchAdmin -PolicyDocument (Get-content -Raw RegionUsEast1CloudWatchAdmin.json) @session -Force
-
-# Create disable all region policy
-$disableRegionsPolicy = New-IAMPolicy -PolicyName RegionDisableAll -PolicyDocument (Get-content -Raw RegionDisableAll.json) @session -Force
-
-# Create disable all region policy
-$accountPortalPolicy = New-IAMPolicy -PolicyName AccountPortalFullAccess -PolicyDocument (Get-content -Raw AccountPortalFullAccess.json) @session -Force
-
-# Create admin group
-$adminGroup = New-IAMGroup -GroupName Administrators @session -Force
-
-# Create financial admin group
-$financialAdminGroup = New-IAMGroup -GroupName FinancialAdministrators @session -Force
-
-# Create support access group
-$supportAccessGroup = New-IAMGroup -GroupName SupportAccess @session -Force
+Write-Output ("`t Creating baseline policy objects...")
 
 # Retrieve account ID
 $account = (Get-STSCallerIdentity @session).Account
 
-# Create aupport access role
-$supportAccessRole = New-IAMRole -RoleName SupportAccess -AssumeRolePolicyDocument (Get-content -Raw SupportAccessRoleTrustPolicyDocument.json).Replace("{accountid}", $account) @session
+# Create WSU policies
+$usWestAdmin = New-IAMPolicy -PolicyName WsuRegionUsWest2ScopedAdministrator -PolicyDocument (Get-content -Raw WsuRegionUsWest2ScopedAdministrator.json) @session -Force
+$cloudwatchAdmin = New-IAMPolicy -PolicyName WsuRegionUsEast1CloudWatchAdmin -PolicyDocument (Get-content -Raw WsuRegionUsEast1CloudWatchAdmin.json) @session -Force
+$disableRegionsPolicy = New-IAMPolicy -PolicyName WsuRegionDisableAll -PolicyDocument (Get-content -Raw WsuRegionDisableAll.json) @session -Force
+$accountPortalPolicy = New-IAMPolicy -PolicyName WsuAccountPortalFullAccess -PolicyDocument (Get-content -Raw WsuAccountPortalFullAccess.json) @session -Force
+
+# Create groups
+$adminGroup = New-IAMGroup -GroupName Administrators @session -Force
+$financialAdminGroup = New-IAMGroup -GroupName FinancialAdministrators @session -Force
+$supportAccessGroup = New-IAMGroup -GroupName SupportAccess @session -Force
+
+# Create service-linked roles
+$accessAnalyzerRole = New-IAMServiceLinkedRole -AWSServiceName access-analyzer.amazonaws.com @session
+$guardDutyRole = New-IAMServiceLinkedRole -AWSServiceName guardduty.amazonaws.com @session
+$configServiceRole = New-IAMServiceLinkedRole -AWSServiceName config.amazonaws.com @session
+$securityHubRole = New-IAMServiceLinkedRole -AWSServiceName securityhub.amazonaws.com @session
+
+# Create support access role
+$supportAccessRole = New-IAMRole -RoleName AWSSupportAccessRole -AssumeRolePolicyDocument (Get-content -Raw AWSSupportAccessRole-TrustPolicyDocument.json).Replace("{accountid}", $account) @session
 
 # Pause to allow custom objects to propogate
 Write-Output ("`t Waiting for objects to propogate...")
@@ -94,15 +90,15 @@ Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:po
 Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/job-function/Billing @session -Force
 
 # Register policies on financial administrators group
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn $accountPortalPolicy.Arn -AccessKey @session -Force
+Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn $accountPortalPolicy.Arn @session -Force
 Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/job-function/Billing @session -Force
 
 # Register policies on support access group
 Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/job-function/SupportUser @session -Force
 Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess @session -Force
 
-# Register policies on support access role
-Register-IAMRolePolicy -RoleName SupportAccess -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess @session
+# Register policies on support role
+Register-IAMRolePolicy -RoleName AWSSupportAccessRole -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess @session
 
 Write-Output ("`t Policies successfully attached.")
 
