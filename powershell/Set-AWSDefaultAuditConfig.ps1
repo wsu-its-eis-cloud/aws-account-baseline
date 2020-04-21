@@ -68,7 +68,6 @@ $session = @{
     'SessionToken' = $globalSession.SessionToken;
 }
 
-
 # Test if bucket exists
 $account = (Get-STSCallerIdentity @session).Account
 $bucketName = ("config-bucket-{0}" -f $account)
@@ -168,6 +167,32 @@ try {
     $subscriptionRequest.StandardsArn = "arn:aws:securityhub:us-west-2::standards/pci-dss/v/3.2.1"
 
     $hubResult = Enable-SHUBStandardsBatch -StandardsSubscriptionRequest $subscriptionRequest @session
+}
+
+# Disable AWS SOC managed controls
+Write-Output ("`t Disabling AWS SOC managed controls...")
+$enabledStandards = Get-SHUBEnabledStandard @session
+$cisStandardSubscriptionArn = $false
+foreach($standard in $enabledStandards) {
+    if($standard.StandardsArn -match "cis-aws-foundations-benchmark") {
+        $cisStandardSubscriptionArn = $standard.StandardsSubscriptionArn
+    }
+}
+
+if($cisStandardSubscriptionArn) {
+    $cisControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $cisStandardSubscriptionArn @session
+    Import-Csv AWSCisControlsToDisable.csv | ForEach-Object {
+        foreach($control in $cisControls) {
+            if($_.ControlId -eq $control.ControlId -and $control.ControlStatus -eq "ENABLED") {
+                Write-Output ("`t`t Disabling {0}" -f $_.ControlId)
+                Start-Sleep 1
+                Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason @session
+                
+            }
+        }
+    }
+} else {
+    Write-Output ("`t AWS CIS Standard not enabled.")
 }
 
 Write-Output ("`t Compliance configurations complete.")
