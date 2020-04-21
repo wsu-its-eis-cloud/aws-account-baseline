@@ -157,6 +157,21 @@ if($guardDutyDetectors.Count -lt 1) {
     New-GDDetector -Enable $true @session
 }
 
+# Enable Security Hub
+Write-Output ("`t Enabling Security Hub...")
+try {
+    $hub = Get-SHUBHub @session
+} catch {
+    Enable-SHUBSecurityHub @session
+
+    $subscriptionRequest = New-Object Amazon.SecurityHub.Model.StandardsSubscriptionRequest
+    $subscriptionRequest.StandardsArn = "arn:aws:securityhub:us-west-2::standards/pci-dss/v/3.2.1"
+
+    $hubResult = Enable-SHUBStandardsBatch -StandardsSubscriptionRequest $subscriptionRequest @session
+}
+
+Write-Output ("`t Compliance configurations complete.")
+
 # Stop the Transcript
 Stop-Transcript
 

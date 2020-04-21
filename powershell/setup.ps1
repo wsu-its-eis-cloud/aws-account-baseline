@@ -129,6 +129,17 @@ if (!(Get-Module -ListAvailable -Name AWS.Tools.GuardDuty) -or $force) {
     $changesMade = $true
 }
 
+# Check for modules required by this library
+if (!(Get-Module -ListAvailable -Name AWS.Tools.SecurityHub) -or $force) {
+    if($force) {
+        Install-Module -Name AWS.Tools.SecurityHub -AllowClobber -Force
+    } else {
+        Install-Module -Name AWS.Tools.SecurityHub
+    }
+
+    $changesMade = $true
+}
+
 if($changesMade) {
     Write-Output "Modules successfully installed and updated."
 }else {

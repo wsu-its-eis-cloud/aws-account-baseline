@@ -51,3 +51,12 @@ else {
     Write-Host "Module Import-Module AWS.Tools.GuardDuty has not been installed.  Please run this libraries setup script."
     return;
 }
+
+# Check for SecurityHub module
+if (Get-Module -ListAvailable -Name AWS.Tools.SecurityHub) {
+    Import-Module AWS.Tools.SecurityHub
+} 
+else {
+    Write-Host "Module Import-Module AWS.Tools.SecurityHub has not been installed.  Please run this libraries setup script."
+    return;
+}
