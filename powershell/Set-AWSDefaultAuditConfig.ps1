@@ -157,9 +157,14 @@ try {
 Write-Output ("`t Disabling AWS SOC managed controls...")
 $enabledStandards = Get-SHUBEnabledStandard @session
 $cisStandardSubscriptionArn = $false
+$pciStandardSubscriptionArn = $false
 foreach($standard in $enabledStandards) {
     if($standard.StandardsArn -match "cis-aws-foundations-benchmark") {
         $cisStandardSubscriptionArn = $standard.StandardsSubscriptionArn
+    }
+
+    if($standard.StandardsArn -match "pci-dss") {
+        $pciStandardSubscriptionArn = $standard.StandardsSubscriptionArn
     }
 }
 
@@ -167,6 +172,22 @@ if($cisStandardSubscriptionArn) {
     $cisControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $cisStandardSubscriptionArn @session
     Import-Csv AWSCisControlsToDisable.csv | ForEach-Object {
         foreach($control in $cisControls) {
+            if($_.ControlId -eq $control.ControlId -and $control.ControlStatus -eq "ENABLED") {
+                Write-Output ("`t`t Disabling {0}" -f $_.ControlId)
+                Start-Sleep 1
+                Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason @session
+                
+            }
+        }
+    }
+} else {
+    Write-Output ("`t AWS CIS Standard not enabled.")
+}
+
+if($pciStandardSubscriptionArn) {
+    $pciControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $pciStandardSubscriptionArn @session
+    Import-Csv AWSPciControlsToDisable.csv | ForEach-Object {
+        foreach($control in $pciControls) {
             if($_.ControlId -eq $control.ControlId -and $control.ControlStatus -eq "ENABLED") {
                 Write-Output ("`t`t Disabling {0}" -f $_.ControlId)
                 Start-Sleep 1
