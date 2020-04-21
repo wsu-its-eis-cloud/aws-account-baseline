@@ -141,6 +141,15 @@ Import-Csv AWSConfigRules.csv | ForEach-Object {
     }
 }
 
+$analyzers = Get-IAMAAAnalyzerList @session
+if($analyzers.Count -lt 1) {
+    $analyzerName = ("ConsoleAnalyzer-{0}" -f (New-Guid).Guid.ToString())
+    $analyzerType = [Amazon.AccessAnalyzer.Type]::ACCOUNT
+    $analyzer = New-IAMAAAnalyzer -AnalyzerName $analyzerName -Type $analyzerType @session
+}
+
+
+
 
 # Stop the Transcript
 Stop-Transcript

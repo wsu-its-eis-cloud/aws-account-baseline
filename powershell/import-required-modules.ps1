@@ -33,3 +33,12 @@ else {
     Write-Host "Module Import-Module AWS.Tools.ConfigService has not been installed.  Please run this libraries setup script."
     return;
 }
+
+# Check for EC2 module
+if (Get-Module -ListAvailable -Name AWS.Tools.AccessAnalyzer) {
+    Import-Module AWS.Tools.AccessAnalyzer
+} 
+else {
+    Write-Host "Module Import-Module AWS.Tools.AccessAnalyzer has not been installed.  Please run this libraries setup script."
+    return;
+}

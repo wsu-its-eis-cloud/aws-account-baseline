@@ -107,6 +107,17 @@ if (!(Get-Module -ListAvailable -Name AWS.Tools.ConfigService) -or $force) {
     $changesMade = $true
 }
 
+# Check for modules required by this library
+if (!(Get-Module -ListAvailable -Name AWS.Tools.AccessAnalyzer) -or $force) {
+    if($force) {
+        Install-Module -Name AWS.Tools.AccessAnalyzer -AllowClobber -Force
+    } else {
+        Install-Module -Name AWS.Tools.AccessAnalyzer
+    }
+
+    $changesMade = $true
+}
+
 if($changesMade) {
     Write-Output "Modules successfully installed and updated."
 }else {
