@@ -1,8 +1,5 @@
 param(	
-    [Alias("a")]
-    [string] $accountName = "",
-
-	[Alias("s")]
+    [Alias("s")]
     [string] $sessionName = "awsDefaultSession",
 	
     [Alias("h")]
@@ -15,13 +12,6 @@ if ($help) {
     Write-Output ("`t ")
     Write-Output ("`t Parameters:")
     Write-Output ("`t ")
-    Write-Output ("`t accountName")
-    Write-Output ("`t     The name of the AWS account, e.g., its-aws-demo.  Used for setting signin-in alias.")
-    Write-Output ("`t     Default: {0}" -f $sessionName)
-    Write-Output ("`t     Alias: s")
-    Write-Output ("`t     Example: .\{0}.ps1 -accountName {1}" -f $MyInvocation.MyCommand.Name, $accountName)
-    Write-Output ("`t     Example: .\{0}.ps1 -a {1}" -f $MyInvocation.MyCommand.Name, $accountName)
-    Write-Output ("`t ")
     Write-Output ("`t sessionName")
     Write-Output ("`t     The name of the global variable that stores the MFA validated AWS session.")
     Write-Output ("`t     Default: {0}" -f $sessionName)
@@ -31,12 +21,6 @@ if ($help) {
 
     return $false
 }
-
-# Prompt for account name if not specified
-if ($accountName -eq "") {
-	$accountName = Read-Host "Enter the account name, e.g., its-aws-demo"
-}
-$accountName = $accountName.ToLower()
 
 # navigate to library root
 cd $PSScriptRoot
