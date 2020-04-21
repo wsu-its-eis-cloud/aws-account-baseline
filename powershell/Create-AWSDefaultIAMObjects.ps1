@@ -1,6 +1,9 @@
 param(	
 	[Alias("s")]
     [string] $sessionName = "awsDefaultSession",
+
+    [Alias("t")]
+    [switch] $transcribe = $false,
 	
     [Alias("h")]
     [switch] $help = $false
@@ -18,6 +21,13 @@ if ($help) {
     Write-Output ("`t     Alias: s")
     Write-Output ("`t     Example: .\{0}.ps1 -sessionName {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
     Write-Output ("`t     Example: .\{0}.ps1 -s {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
+    Write-Output ("`t ")
+    Write-Output ("`t transcribe")
+    Write-Output ("`t     If set, creates a transcript of the script.")
+    Write-Output ("`t     Default: {0}" -f $transcribe)
+    Write-Output ("`t     Alias: s")
+    Write-Output ("`t     Example: .\{0}.ps1 -transcribe {1}" -f $MyInvocation.MyCommand.Name, $transcribe)
+    Write-Output ("`t     Example: .\{0}.ps1 -t {1}" -f $MyInvocation.MyCommand.Name, $transcribe)
 
     return $false
 }
@@ -28,9 +38,11 @@ cd $PSScriptRoot
 # load necessary modules
 .\import-required-modules.ps1
 
-# Start the transcript
-$transcriptName = ("{0}-{1}.transcript" -f $MyInvocation.MyCommand.Name, [DateTimeOffset]::Now.ToUnixTimeSeconds())
-Start-Transcript -Path $transcriptName
+# Check if we are transcribing
+if($transcribe) {
+    $transcriptName = ("{0}-{1}.transcript" -f $MyInvocation.MyCommand.Name, [DateTimeOffset]::Now.ToUnixTimeSeconds())
+    Start-Transcript -Path $transcriptName
+}
 
 # Retrieve specified AWS STS session
 $globalSession = $null
@@ -55,31 +67,78 @@ $session = @{
 Write-Output ("`t Creating baseline policy objects...")
 
 # Retrieve account ID
-$account = (Get-STSCallerIdentity @session).Account
+$accountid = (Get-STSCallerIdentity @session).Account
 
 # Create WSU policies
-$usWestAdmin = New-IAMPolicy -PolicyName WsuRegionUsWest2ScopedAdministrator -PolicyDocument (Get-content -Raw WsuRegionUsWest2ScopedAdministrator.json) @session -Force
-$cloudwatchAdmin = New-IAMPolicy -PolicyName WsuRegionUsEast1CloudWatchAdmin -PolicyDocument (Get-content -Raw WsuRegionUsEast1CloudWatchAdmin.json) @session -Force
-$disableRegionsPolicy = New-IAMPolicy -PolicyName WsuRegionDisableAll -PolicyDocument (Get-content -Raw WsuRegionDisableAll.json) @session -Force
-$accountPortalPolicy = New-IAMPolicy -PolicyName WsuAccountPortalFullAccess -PolicyDocument (Get-content -Raw WsuAccountPortalFullAccess.json) @session -Force
+# Get the list of existing policies
+$policyList = Get-IAMPolicyList -Scope Local @session
+if(($policyList | Where-Object {$_.PolicyName -eq "WsuRegionUsWest2ScopedAdministrator"}).Count -eq 0) {
+    $usWestAdmin = New-IAMPolicy -PolicyName WsuRegionUsWest2ScopedAdministrator -PolicyDocument (Get-content -Raw WsuRegionUsWest2ScopedAdministrator.json) @session -Force
+}
+
+if(($policyList | Where-Object {$_.PolicyName -eq "WsuRegionUsEast1CloudWatchAdmin"}).Count -eq 0) {
+    $cloudwatchAdmin = New-IAMPolicy -PolicyName WsuRegionUsEast1CloudWatchAdmin -PolicyDocument (Get-content -Raw WsuRegionUsEast1CloudWatchAdmin.json) @session -Force
+}
+
+if(($policyList | Where-Object {$_.PolicyName -eq "WsuRegionDisableAll"}).Count -eq 0) {
+    $disableRegionsPolicy = New-IAMPolicy -PolicyName WsuRegionDisableAll -PolicyDocument (Get-content -Raw WsuRegionDisableAll.json) @session -Force
+}
+
+if(($policyList | Where-Object {$_.PolicyName -eq "WsuAccountPortalFullAccess"}).Count -eq 0) {
+    $accountPortalPolicy = New-IAMPolicy -PolicyName WsuAccountPortalFullAccess -PolicyDocument (Get-content -Raw WsuAccountPortalFullAccess.json) @session -Force
+}
 
 # Create groups
-$adminGroup = New-IAMGroup -GroupName Administrators @session -Force
-$financialAdminGroup = New-IAMGroup -GroupName FinancialAdministrators @session -Force
-$supportAccessGroup = New-IAMGroup -GroupName SupportAccess @session -Force
+# Gets the list of groups
+$groupList = Get-IAMGroupList @session
+
+if(($groupList | Where-Object {$_.GroupName -eq "Administrators"}).Count -eq 0) {
+    $adminGroup = New-IAMGroup -GroupName Administrators @session -Force
+}
+
+if(($groupList | Where-Object {$_.GroupName -eq "FinancialAdministrators"}).Count -eq 0) {
+    $financialAdminGroup = New-IAMGroup -GroupName FinancialAdministrators @session -Force
+}
+
+if(($groupList | Where-Object {$_.GroupName -eq "Administrators"}).Count -eq 0) {
+    $supportAccessGroup = New-IAMGroup -GroupName SupportAccess @session -Force
+}
 
 # Create service-linked roles
-$accessAnalyzerRole = New-IAMServiceLinkedRole -AWSServiceName access-analyzer.amazonaws.com @session
-$guardDutyRole = New-IAMServiceLinkedRole -AWSServiceName guardduty.amazonaws.com @session
-$configServiceRole = New-IAMServiceLinkedRole -AWSServiceName config.amazonaws.com @session
-$securityHubRole = New-IAMServiceLinkedRole -AWSServiceName securityhub.amazonaws.com @session
+# Gets the list of roles
+$roleList = Get-IAMRoleList @session
+
+if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForAccessAnalyzer"}).Count -eq 0) {
+    $accessAnalyzerRole = New-IAMServiceLinkedRole -AWSServiceName access-analyzer.amazonaws.com @session
+}
+
+if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForAmazonGuardDuty"}).Count -eq 0) {
+    $guardDutyRole = New-IAMServiceLinkedRole -AWSServiceName guardduty.amazonaws.com @session
+}
+
+if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForConfig"}).Count -eq 0) {
+    $configServiceRole = New-IAMServiceLinkedRole -AWSServiceName config.amazonaws.com @session
+}
+
+if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForSecurityHub"}).Count -eq 0) {
+    $securityHubRole = New-IAMServiceLinkedRole -AWSServiceName securityhub.amazonaws.com @session
+}
 
 # Create support access role
-$supportAccessRole = New-IAMRole -RoleName AWSSupportAccessRole -AssumeRolePolicyDocument (Get-content -Raw AWSSupportAccessRole-TrustPolicyDocument.json).Replace("{accountid}", $account) @session
+if(($roleList | Where-Object {$_.RoleName -eq "AWSSupportAccessRole"}).Count -eq 0) {
+    $supportAccessRole = New-IAMRole -RoleName AWSSupportAccessRole -AssumeRolePolicyDocument (Get-content -Raw AWSSupportAccessRole-TrustPolicyDocument.json).Replace("{accountid}", $accountid) @session
+}
 
 # Pause to allow custom objects to propogate
 Write-Output ("`t Waiting for objects to propogate...")
 Start-Sleep -Seconds 5
+
+# Refresh our policy list to reflect newly created policies (needed for non-destructive re-run)
+$policyList = Get-IAMPolicyList -Scope Local @session
+$usWestAdmin = ($policyList | Where-Object {$_.PolicyName -eq "WsuRegionUsWest2ScopedAdministrator"})[0]
+$cloudwatchAdmin = ($policyList | Where-Object {$_.PolicyName -eq "WsuRegionUsEast1CloudWatchAdmin"})[0]
+$disableRegionsPolicy = ($policyList | Where-Object {$_.PolicyName -eq "WsuRegionDisableAll"})[0]
+$accountPortalPolicy = ($policyList | Where-Object {$_.PolicyName -eq "WsuAccountPortalFullAccess"})[0]
 
 # Register policies on administrators group
 Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $usWestAdmin.Arn @session -Force
@@ -102,8 +161,10 @@ Register-IAMRolePolicy -RoleName AWSSupportAccessRole -PolicyArn arn:aws:iam::aw
 
 Write-Output ("`t Policies successfully attached.")
 
-# Stop the Transcript
-Stop-Transcript
+# Check if we are transcribing
+if($transcribe) {
+    Stop-Transcript
+}
 
 #True for success
 return $true

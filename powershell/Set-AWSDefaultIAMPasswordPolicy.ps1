@@ -1,6 +1,9 @@
 param(	
 	[Alias("s")]
     [string] $sessionName = "awsDefaultSession",
+
+    [Alias("t")]
+    [switch] $transcribe = $false,
 	
     [Alias("h")]
     [switch] $help = $false
@@ -18,6 +21,13 @@ if ($help) {
     Write-Output ("`t     Alias: s")
     Write-Output ("`t     Example: .\{0}.ps1 -sessionName {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
     Write-Output ("`t     Example: .\{0}.ps1 -s {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
+    Write-Output ("`t ")
+    Write-Output ("`t transcribe")
+    Write-Output ("`t     If set, creates a transcript of the script.")
+    Write-Output ("`t     Default: {0}" -f $transcribe)
+    Write-Output ("`t     Alias: s")
+    Write-Output ("`t     Example: .\{0}.ps1 -transcribe {1}" -f $MyInvocation.MyCommand.Name, $transcribe)
+    Write-Output ("`t     Example: .\{0}.ps1 -t {1}" -f $MyInvocation.MyCommand.Name, $transcribe)
 
     return $false
 }
@@ -28,9 +38,11 @@ cd $PSScriptRoot
 # load necessary modules
 .\import-required-modules.ps1
 
-# Start the transcript
-$transcriptName = ("{0}-{1}.transcript" -f $MyInvocation.MyCommand.Name, [DateTimeOffset]::Now.ToUnixTimeSeconds())
-Start-Transcript -Path $transcriptName
+# Check if we are transcribing
+if($transcribe) {
+    $transcriptName = ("{0}-{1}.transcript" -f $MyInvocation.MyCommand.Name, [DateTimeOffset]::Now.ToUnixTimeSeconds())
+    Start-Transcript -Path $transcriptName
+}
 
 # Retrieve specified AWS STS session
 $globalSession = $null
@@ -71,8 +83,10 @@ Update-IAMAccountPasswordPolicy @passwordPolicy @session
 
 Write-Output ("`t Password policy set")
 
-# Stop the Transcript
-Stop-Transcript
+# Check if we are transcribing
+if($transcribe) {
+    Stop-Transcript
+}
 
 #True for success
 return $true

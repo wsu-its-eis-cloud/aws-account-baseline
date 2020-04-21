@@ -4,6 +4,9 @@ param(
 
     [Alias("f")]
     [switch] $force = $false,
+
+    [Alias("t")]
+    [switch] $transcribe = $false,
 	
     [Alias("h")]
     [switch] $help = $false
@@ -28,6 +31,13 @@ if ($help) {
     Write-Output ("`t     Alias: s")
     Write-Output ("`t     Example: .\{0}.ps1 -force {1}" -f $MyInvocation.MyCommand.Name, $force)
     Write-Output ("`t     Example: .\{0}.ps1 -f {1}" -f $MyInvocation.MyCommand.Name, $force)
+    Write-Output ("`t ")
+    Write-Output ("`t transcribe")
+    Write-Output ("`t     If set, creates a transcript of the script.")
+    Write-Output ("`t     Default: {0}" -f $transcribe)
+    Write-Output ("`t     Alias: s")
+    Write-Output ("`t     Example: .\{0}.ps1 -transcribe {1}" -f $MyInvocation.MyCommand.Name, $transcribe)
+    Write-Output ("`t     Example: .\{0}.ps1 -t {1}" -f $MyInvocation.MyCommand.Name, $transcribe)
 
     return $false
 }
@@ -38,24 +48,20 @@ cd $PSScriptRoot
 # load necessary modules
 .\import-required-modules.ps1
 
-# Start the transcript
-$transcriptName = ("{0}-{1}.transcript" -f $MyInvocation.MyCommand.Name, [DateTimeOffset]::Now.ToUnixTimeSeconds())
-Start-Transcript -Path $transcriptName
+# Check if we are transcribing
+if($transcribe) {
+    $transcriptName = ("{0}-{1}.transcript" -f $MyInvocation.MyCommand.Name, [DateTimeOffset]::Now.ToUnixTimeSeconds())
+    Start-Transcript -Path $transcriptName
+}
 
 # If the force flag is not present, prompt session for confirmation
 if(!$force) {
-    Write-Output ("`t THIS OPERATION WILL DELETE ALL UNNAMED VPCS IN YOUR ACCOUNT")
-    #Write-Host ("`t THIS OPERATION WILL DELETE ALL UNNAMED VPCS IN YOUR ACCOUNT")
-
-    Write-Output ("`t TYPE 'DELETE' TO CONFIRM")
-    #Write-Host ("`t TYPE 'DELETE' TO CONFIRM")
-
-    $confirmation = Read-Host "`t ENTER DELETE"
+    Write-Output ("`t THIS OPERATION WILL DELETE ALL UNTAGGED VPCS IN YOUR ACCOUNT WITH A CIDR BLOCK OF 172.31.0.0/16")
+    Write-Output ("`t`t Type 'DELETE' to confirm")
+    $confirmation = Read-Host "`t`t Enter confirmation"
 
     if($confirmation -ne "DELETE") {
         Write-Output ("`t CONFIRMATION TEXT DOES NOT MATCH, ABORTING")
-        #Write-Host ("`t CONFIRMATION TEXT DOES NOT MATCH, ABORTING")
-
         return $false
     }
 }
@@ -131,12 +137,12 @@ foreach($region in $regions) {
     }
 }
 
-Write-Output ("`t")
-Write-Output ("`t")
 Write-Output ("`t This house is clean.")
 
-# Stop the Transcript
-Stop-Transcript
+# Check if we are transcribing
+if($transcribe) {
+    Stop-Transcript
+}
 
 #True for success
 return $true

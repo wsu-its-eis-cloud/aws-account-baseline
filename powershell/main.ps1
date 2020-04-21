@@ -1,12 +1,12 @@
-param(	
+param(
     [Alias("a")]
     [string] $accountName = "",
 
-	[Alias("s")]
+    [Alias("s")]
     [string] $sessionName = "awsDefaultSession",
 
     [Alias("t")]
-    [switch] $transcribe = $false,
+    [switch] $transcribe = $true,
 	
     [Alias("h")]
     [switch] $help = $false
@@ -30,7 +30,7 @@ if ($help) {
     Write-Output ("`t     Default: {0}" -f $sessionName)
     Write-Output ("`t     Alias: s")
     Write-Output ("`t     Example: .\{0}.ps1 -sessionName {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
-    Write-Output ("`t     Example: .\{0}.ps1 -s {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
+    Write-Output ("`t     Example: .\{0}.ps1 -s {1}" -f $MyInvocation.MyCommand.Name, $sessionName)Write-Output ("`t ")
     Write-Output ("`t ")
     Write-Output ("`t transcribe")
     Write-Output ("`t     If set, creates a transcript of the script.")
@@ -60,37 +60,35 @@ if($transcribe) {
     Start-Transcript -Path $transcriptName
 }
 
-# Retrieve specified AWS STS session
-$globalSession = $null
-$expression = ("`$globalSession = `$global:{0}" -f $sessionName)
-Invoke-Expression -Command $expression
+Write-Output ("")
+Write-Output ("Deleting default VPC's from account.")
+.\Delete-AWSDefaultVPCs.ps1
+Write-Output ("VPC's deleted.")
+Write-Output ("")
 
-# If the session is null, return false
-if($globalSession -eq $null) {
-    Write-Output ("`t Failed to retrieve specified AWS session.")
+Write-Output ("")
+Write-Output ("Configuring default IAM password policy.")
+.\Set-AWSDefaultIAMPasswordPolicy.ps1
+Write-Output ("Policy set.")
+Write-Output ("")
 
-    Stop-Transcript
-    return $false
-}
+Write-Output ("")
+Write-Output ("Setting the account alias.")
+.\Set-AWSDefaultIAMAlias.ps1 -accountName $accountName
+Write-Output ("Alias set.")
+Write-Output ("")
 
-# Creating session hashtable for parameter splatting
-$session = @{
-    'AccessKey'    = $globalSession.AccessKeyId;
-    'SecretKey'    = $globalSession.SecretAccessKey;
-    'SessionToken' = $globalSession.SessionToken;
-}
+Write-Output ("")
+Write-Output ("Creating default IAM objects.")
+.\Create-AWSDefaultIAMObjects.ps1
+Write-Output ("IAM Objects set.")
+Write-Output ("")
 
-Write-Output ("`t Setting account alias...")
-
-# Get existing alias
-$accountAlias = Get-IAMAccountAlias @session
-
-# Check if alias is already set, if not, set it
-if($accountAlias -ne $accountName) {
-    New-IAMAccountAlias -AccountAlias $accountName @session
-}
-
-Write-Output ("`t Alias set")
+Write-Output ("")
+Write-Output ("Configuring compliance policies.")
+.\Set-AWSDefaultAuditConfig.ps1
+Write-Output ("Compliance policy set.")
+Write-Output ("")
 
 # Check if we are transcribing
 if($transcribe) {
