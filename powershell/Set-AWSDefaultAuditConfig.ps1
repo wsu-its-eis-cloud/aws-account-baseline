@@ -141,6 +141,8 @@ Import-Csv AWSConfigRules.csv | ForEach-Object {
     }
 }
 
+# Enable IAM analyzer
+Write-Output ("`t Enabling IAM analyzer...")
 $analyzers = Get-IAMAAAnalyzerList @session
 if($analyzers.Count -lt 1) {
     $analyzerName = ("ConsoleAnalyzer-{0}" -f (New-Guid).Guid.ToString())
@@ -148,8 +150,12 @@ if($analyzers.Count -lt 1) {
     $analyzer = New-IAMAAAnalyzer -AnalyzerName $analyzerName -Type $analyzerType @session
 }
 
-
-
+# Enable Guard Duty
+Write-Output ("`t Enabling Guard Duty...")
+$guardDutyDetectors = Get-GDDetectorList @session
+if($guardDutyDetectors.Count -lt 1) {
+    New-GDDetector -Enable $true @session
+}
 
 # Stop the Transcript
 Stop-Transcript

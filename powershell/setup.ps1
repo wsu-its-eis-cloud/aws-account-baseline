@@ -118,6 +118,17 @@ if (!(Get-Module -ListAvailable -Name AWS.Tools.AccessAnalyzer) -or $force) {
     $changesMade = $true
 }
 
+# Check for modules required by this library
+if (!(Get-Module -ListAvailable -Name AWS.Tools.GuardDuty) -or $force) {
+    if($force) {
+        Install-Module -Name AWS.Tools.GuardDuty -AllowClobber -Force
+    } else {
+        Install-Module -Name AWS.Tools.GuardDuty
+    }
+
+    $changesMade = $true
+}
+
 if($changesMade) {
     Write-Output "Modules successfully installed and updated."
 }else {

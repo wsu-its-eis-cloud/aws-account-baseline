@@ -16,7 +16,7 @@ else {
     return;
 }
 
-# Check for EC2 module
+# Check for S3 module
 if (Get-Module -ListAvailable -Name AWS.Tools.S3) {
     Import-Module AWS.Tools.S3
 } 
@@ -25,7 +25,7 @@ else {
     return;
 }
 
-# Check for EC2 module
+# Check for ConfigService module
 if (Get-Module -ListAvailable -Name AWS.Tools.ConfigService) {
     Import-Module AWS.Tools.ConfigService
 } 
@@ -34,11 +34,20 @@ else {
     return;
 }
 
-# Check for EC2 module
+# Check for AccessAnalyzer module
 if (Get-Module -ListAvailable -Name AWS.Tools.AccessAnalyzer) {
     Import-Module AWS.Tools.AccessAnalyzer
 } 
 else {
     Write-Host "Module Import-Module AWS.Tools.AccessAnalyzer has not been installed.  Please run this libraries setup script."
+    return;
+}
+
+# Check for GuardDuty module
+if (Get-Module -ListAvailable -Name AWS.Tools.GuardDuty) {
+    Import-Module AWS.Tools.GuardDuty
+} 
+else {
+    Write-Host "Module Import-Module AWS.Tools.GuardDuty has not been installed.  Please run this libraries setup script."
     return;
 }
