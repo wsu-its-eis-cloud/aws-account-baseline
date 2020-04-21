@@ -122,7 +122,6 @@ if($cfgRecorderStatus.Recording) {
 Write-Output ("`t Building config compliance rules...")
 $owner = [Amazon.ConfigService.Owner]::AWS
 Import-Csv AWSConfigRules.csv | ForEach-Object {
-    
     try {
         $cfgRule = Get-CFGConfigRule -ConfigRuleName $_.ConfigRuleName @session
     } catch {
@@ -141,7 +140,6 @@ Import-Csv AWSConfigRules.csv | ForEach-Object {
         Write-CFGConfigRule @cfgRule @session
     }
 }
-
 
 
 # Stop the Transcript
