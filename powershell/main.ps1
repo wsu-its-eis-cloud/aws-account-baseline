@@ -90,10 +90,24 @@ Write-Output ("Configuring compliance policies.")
 Write-Output ("Compliance policy set.")
 Write-Output ("")
 
+# Build final checklist
+$checklist = Get-Content -Raw _ChecklistTemplate.csv
+$signinlink = ("https://{0}.signin.aws.amazon.com/console" -f $accountName)
+$checklist = $checklist.Replace("{signinlink}", $signinlink)
+$checklistName = ("{0}-Checklist.csv" -f $accountName)
+$checklist | Set-Content $checklistName
+$packetName = ("AccountBaselinePacket-{0}.zip" -f $accountName)
+
 # Check if we are transcribing
 if($transcribe) {
     Stop-Transcript
+    Start-Sleep 2
 }
+
+# Build account baseline packet
+Get-ChildItem -Exclude _*,.*,*.md | Compress-Archive -DestinationPath $packetName -Force
+rm *.transcript
+rm $checklistName
 
 #True for success
 return $true

@@ -68,11 +68,13 @@ $session = @{
 $account = (Get-STSCallerIdentity @session).Account
 $bucketName = ("config-bucket-{0}" -f $account)
 $bucket = Get-S3Bucket -BucketName $bucketName @session
+$bucket | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 
 if(!$bucket) {
     # Create bucket
     Write-Output ("`t Creating S3 bucket for config logs...")
     $bucket = New-S3Bucket -BucketName $bucketName -CannedACLName ([Amazon.S3.S3CannedACL]::BucketOwnerFullControl) @session
+    $bucket | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 
     # Let bucket creation take effect and propogate
     Write-Output ("`t Letting S3 bucket propogate...")
@@ -100,11 +102,13 @@ $cfgRecorder = Get-CFGConfigurationRecorder @session
 if(!$cfgRecorder) {
     $roleArn = ("arn:aws:iam::{0}:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig" -f $account)
     $cfgRecorder = Write-CFGConfigurationRecorder -ConfigurationRecorderName default -RecordingGroup_AllSupported $true -RecordingGroup_IncludeGlobalResourceType $true -ConfigurationRecorder_RoleARN $roleArn @session
+    $cfgRecorder | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
 $cfgChannel = Get-CFGDeliveryChannel @session
 if(!$cfgChannel) {
     $cfgChannel = Write-CFGDeliveryChannel -DeliveryChannelName default -DeliveryChannel_S3BucketName $bucketName @session
+    $cfgChannel | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
 # Start the recorder if it is stopped
@@ -132,6 +136,7 @@ Import-Csv AWSConfigRules.csv | ForEach-Object {
             'ConfigRule_InputParameter' = $_.InputParameters.Replace("{accountid}", $account);
         }
 
+        $cfgRule | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
         Write-CFGConfigRule @cfgRule @session
     }
 }
@@ -143,6 +148,7 @@ if($analyzers.Count -lt 1) {
     $analyzerName = ("ConsoleAnalyzer-{0}" -f (New-Guid).Guid.ToString())
     $analyzerType = [Amazon.AccessAnalyzer.Type]::ACCOUNT
     $analyzer = New-IAMAAAnalyzer -AnalyzerName $analyzerName -Type $analyzerType @session
+    $analyzer | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
 # Enable Guard Duty
@@ -163,6 +169,7 @@ try {
     $subscriptionRequest.StandardsArn = "arn:aws:securityhub:us-west-2::standards/pci-dss/v/3.2.1"
 
     $hubResult = Enable-SHUBStandardsBatch -StandardsSubscriptionRequest $subscriptionRequest @session
+    $hubResult | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
 # Disable AWS SOC managed controls
@@ -173,10 +180,12 @@ $pciStandardSubscriptionArn = $false
 foreach($standard in $enabledStandards) {
     if($standard.StandardsArn -match "cis-aws-foundations-benchmark") {
         $cisStandardSubscriptionArn = $standard.StandardsSubscriptionArn
+        Write-Output("`t`t{0}" -f $cisStandardSubscriptionArn)
     }
 
     if($standard.StandardsArn -match "pci-dss") {
         $pciStandardSubscriptionArn = $standard.StandardsSubscriptionArn
+        Write-Output("`t`t{0}" -f $pciStandardSubscriptionArn)
     }
 }
 

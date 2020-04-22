@@ -78,6 +78,8 @@ $passwordPolicy = @{
     'RequireUppercaseCharacter'  = $true;
 }
 
+$passwordPolicy | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+
 # Set password policy
 Update-IAMAccountPasswordPolicy @passwordPolicy @session
 
