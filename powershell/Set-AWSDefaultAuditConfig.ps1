@@ -113,7 +113,7 @@ if(!$cfgChannel) {
 
 # Start the recorder if it is stopped
 $cfgRecorderStatus = Get-CFGConfigurationRecorderStatus @session
-if($cfgRecorderStatus.Recording) {
+if(!$cfgRecorderStatus.Recording) {
     Start-CFGConfigurationRecorder -ConfigurationRecorderName $cfgRecorder.Name @session
 }
 
