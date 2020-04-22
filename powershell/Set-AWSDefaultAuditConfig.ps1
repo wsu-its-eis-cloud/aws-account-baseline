@@ -164,20 +164,34 @@ try {
     $hub = Get-SHUBHub @session
 } catch {
     Enable-SHUBSecurityHub @session
+    Start-Sleep 5
+}
 
-    $subscriptionRequest = New-Object Amazon.SecurityHub.Model.StandardsSubscriptionRequest
-    $subscriptionRequest.StandardsArn = "arn:aws:securityhub:us-west-2::standards/pci-dss/v/3.2.1"
-
+# Enable all available standards
+$subscriptionRequest = New-Object Amazon.SecurityHub.Model.StandardsSubscriptionRequest
+$availableStandards = Get-SHUBStandard @session
+foreach($standard in $availableStandards) {
+    Start-Sleep 2
+    $subscriptionRequest.StandardsArn = $standard.StandardsArn
     $hubResult = Enable-SHUBStandardsBatch -StandardsSubscriptionRequest $subscriptionRequest @session
     $hubResult | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
 # Disable AWS SOC managed controls
 Write-Output ("`t Disabling AWS SOC managed controls...")
+Write-Output ("`t Waiting for objects to propogate...")
+Start-Sleep 15
 $enabledStandards = Get-SHUBEnabledStandard @session
+$awsStandardSubscriptionArn = $false
 $cisStandardSubscriptionArn = $false
 $pciStandardSubscriptionArn = $false
 foreach($standard in $enabledStandards) {
+    
+    if($standard.StandardsArn -match "aws-foundational-security-best-practices") {
+        $awsStandardSubscriptionArn = $standard.StandardsSubscriptionArn
+        Write-Output("`t`t{0}" -f $awsStandardSubscriptionArn)
+    }
+    
     if($standard.StandardsArn -match "cis-aws-foundations-benchmark") {
         $cisStandardSubscriptionArn = $standard.StandardsSubscriptionArn
         Write-Output("`t`t{0}" -f $cisStandardSubscriptionArn)

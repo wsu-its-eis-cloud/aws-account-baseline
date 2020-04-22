@@ -96,7 +96,7 @@ $signinlink = ("https://{0}.signin.aws.amazon.com/console" -f $accountName)
 $checklist = $checklist.Replace("{signinlink}", $signinlink)
 $checklistName = ("{0}-Checklist.csv" -f $accountName)
 $checklist | Set-Content $checklistName
-$packetName = ("AccountBaselinePacket-{0}.zip" -f $accountName)
+$packetName = ("AccountBaselinePacket-{0}-{1}.zip" -f $accountName, [DateTimeOffset]::Now.ToUnixTimeSeconds())
 
 # Check if we are transcribing
 if($transcribe) {
