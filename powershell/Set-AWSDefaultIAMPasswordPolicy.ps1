@@ -69,7 +69,7 @@ Write-Output ("`t Configuring IAM password policy...")
 $passwordPolicy = @{ 
     'AllowUsersToChangePassword' = $true;
     'HardExpiry'                 = $false;
-    'MaxPasswordAge'             = 30;
+    'MaxPasswordAge'             = 90;
     'MinimumPasswordLength'      = 64;
     'PasswordReusePrevention'    = 24;
     'RequireLowercaseCharacter'  = $true;
