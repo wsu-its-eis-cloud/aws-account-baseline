@@ -1,2 +1,3 @@
 "ControlId","DisabledReason"
-"PCI.CW.1","Cloudwatch monitoring is performed in the WSU AWS SOC Account"
+"PCI.CW.1","Cloudwatch monitoring is performed in the WSU AWS Master Account"
+"PCI.IAM.5","Redundant to PCI.IAM.4 - Hardware MFA is used for the root account"
