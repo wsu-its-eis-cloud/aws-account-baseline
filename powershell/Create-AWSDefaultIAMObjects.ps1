@@ -137,6 +137,16 @@ if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForSecurityHub"}).C
     $securityHubRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
+if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForECS"}).Count -eq 0) {
+    $ecsRole = New-IAMServiceLinkedRole -AWSServiceName ecs.amazonaws.com @session
+    $ecsRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+}
+
+if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForElasticLoadBalancing"}).Count -eq 0) {
+    $elbRole = New-IAMServiceLinkedRole -AWSServiceName elasticloadbalancing.amazonaws.com @session
+    $elbRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+}
+
 # Create support access role
 if(($roleList | Where-Object {$_.RoleName -eq "AWSSupportAccessRole"}).Count -eq 0) {
     $supportAccessRole = New-IAMRole -RoleName AWSSupportAccessRole -AssumeRolePolicyDocument (Get-content -Raw AWSSupportAccessRole-TrustPolicyDocument.json).Replace("{accountid}", $accountid) @session
