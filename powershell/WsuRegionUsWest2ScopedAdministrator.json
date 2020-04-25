@@ -4,7 +4,7 @@
         {
             "Sid": "VisualEditor0",
             "Effect": "Allow",
-            "Action": "access-analyzer:*",
+            "Action": "autoscaling:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -18,7 +18,7 @@
         {
             "Sid": "VisualEditor1",
             "Effect": "Allow",
-            "Action": "cloudtrail:*",
+            "Action": "autoscaling-plans:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -32,7 +32,7 @@
         {
             "Sid": "VisualEditor2",
             "Effect": "Allow",
-            "Action": "cloudwatch:*",
+            "Action": "cloudtrail:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -46,7 +46,7 @@
         {
             "Sid": "VisualEditor3",
             "Effect": "Allow",
-            "Action": "config:*",
+            "Action": "cloudwatch:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -60,7 +60,7 @@
         {
             "Sid": "VisualEditor4",
             "Effect": "Allow",
-            "Action": "detective:*",
+            "Action": "config:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -74,7 +74,7 @@
         {
             "Sid": "VisualEditor5",
             "Effect": "Allow",
-            "Action": "fms:*",
+            "Action": "detective:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -88,18 +88,24 @@
         {
             "Sid": "VisualEditor6",
             "Effect": "Allow",
-            "Action": "iam:CreateServiceLinkedRole",
+            "Action": "ec2:*",
             "Resource": "*",
             "Condition": {
-                "StringLike": {
-                    "iam:AWSServiceName": "securityhub.amazonaws.com"
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
                 }
             }
         },
         {
             "Sid": "VisualEditor7",
             "Effect": "Allow",
-            "Action": "lambda:*",
+            "Action": [
+                "ecs:*",
+                "ecr:*"
+            ],
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -113,7 +119,7 @@
         {
             "Sid": "VisualEditor8",
             "Effect": "Allow",
-            "Action": "license-manager:*",
+            "Action": "ecs:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -127,7 +133,7 @@
         {
             "Sid": "VisualEditor9",
             "Effect": "Allow",
-            "Action": "logs:*",
+            "Action": "elasticloadbalancing:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -141,7 +147,7 @@
         {
             "Sid": "VisualEditor10",
             "Effect": "Allow",
-            "Action": "organizations:*",
+            "Action": "elasticloadbalancing:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -155,7 +161,7 @@
         {
             "Sid": "VisualEditor11",
             "Effect": "Allow",
-            "Action": "pricing:*",
+            "Action": "fms:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -169,6 +175,87 @@
         {
             "Sid": "VisualEditor12",
             "Effect": "Allow",
+            "Action": "iam:CreateServiceLinkedRole",
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "iam:AWSServiceName": "securityhub.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor13",
+            "Effect": "Allow",
+            "Action": "lambda:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor14",
+            "Effect": "Allow",
+            "Action": "license-manager:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor15",
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor16",
+            "Effect": "Allow",
+            "Action": "organizations:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor17",
+            "Effect": "Allow",
+            "Action": "pricing:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "Null": {
+                    "aws:MultiFactorAuthAge": "false"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor18",
+            "Effect": "Allow",
             "Action": "securityhub:*",
             "Resource": "*",
             "Condition": {
@@ -181,7 +268,7 @@
             }
         },
         {
-            "Sid": "VisualEditor13",
+            "Sid": "VisualEditor19",
             "Effect": "Allow",
             "Action": [
                 "sns:CreatePlatformApplication",
@@ -216,7 +303,7 @@
             }
         },
         {
-            "Sid": "VisualEditor14",
+            "Sid": "VisualEditor20",
             "Effect": "Allow",
             "Action": "sns:*",
             "Resource": "arn:aws:sns:*:*:*",

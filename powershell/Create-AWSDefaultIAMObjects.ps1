@@ -52,8 +52,10 @@ Invoke-Expression -Command $expression
 # If the session is null, return false
 if($globalSession -eq $null) {
     Write-Output ("`t Failed to retrieve specified AWS session.")
+    if($transcribe) {
+        Stop-Transcript
+    }
 
-    Stop-Transcript
     return $false
 }
 
