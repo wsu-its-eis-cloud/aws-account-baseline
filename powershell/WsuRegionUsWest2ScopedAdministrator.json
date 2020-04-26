@@ -4,14 +4,33 @@
         {
             "Sid": "VisualEditor0",
             "Effect": "Allow",
-            "Action": [
-                "access-analyzer:*",
-                "appstream:*"
-            ],
-            "Resource": "*"
+            "Action": "access-analyzer:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
         },
         {
             "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "appstream:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor2",
             "Effect": "Allow",
             "Action": "autoscaling:*",
             "Resource": "*",
@@ -19,13 +38,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor2",
+            "Sid": "VisualEditor3",
             "Effect": "Allow",
             "Action": "autoscaling-plans:*",
             "Resource": "*",
@@ -33,13 +52,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor3",
+            "Sid": "VisualEditor4",
             "Effect": "Allow",
             "Action": "cloudtrail:*",
             "Resource": "*",
@@ -47,13 +66,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor4",
+            "Sid": "VisualEditor5",
             "Effect": "Allow",
             "Action": "cloudwatch:*",
             "Resource": "*",
@@ -61,13 +80,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor5",
+            "Sid": "VisualEditor6",
             "Effect": "Allow",
             "Action": "config:*",
             "Resource": "*",
@@ -75,13 +94,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor6",
+            "Sid": "VisualEditor7",
             "Effect": "Allow",
             "Action": "detective:*",
             "Resource": "*",
@@ -89,13 +108,27 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor7",
+            "Sid": "VisualEditor8",
+            "Effect": "Allow",
+            "Action": "ds:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor9",
             "Effect": "Allow",
             "Action": "ec2:*",
             "Resource": "*",
@@ -103,13 +136,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor8",
+            "Sid": "VisualEditor10",
             "Effect": "Allow",
             "Action": "ecr:*",
             "Resource": "*",
@@ -117,13 +150,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor9",
+            "Sid": "VisualEditor11",
             "Effect": "Allow",
             "Action": "ecs:*",
             "Resource": "*",
@@ -131,41 +164,41 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
-                }
-            }
-        },
-        {
-            "Sid": "VisualEditor10",
-            "Effect": "Allow",
-            "Action": "elasticloadbalancing:*",
-            "Resource": "*",
-            "Condition": {
-                "StringEquals": {
-                    "aws:RequestedRegion": "us-west-2"
-                },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
-                }
-            }
-        },
-        {
-            "Sid": "VisualEditor11",
-            "Effect": "Allow",
-            "Action": "elasticloadbalancing:*",
-            "Resource": "*",
-            "Condition": {
-                "StringEquals": {
-                    "aws:RequestedRegion": "us-west-2"
-                },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
             "Sid": "VisualEditor12",
+            "Effect": "Allow",
+            "Action": "elasticloadbalancing:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor13",
+            "Effect": "Allow",
+            "Action": "elasticloadbalancing:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor14",
             "Effect": "Allow",
             "Action": "fms:*",
             "Resource": "*",
@@ -173,13 +206,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor13",
+            "Sid": "VisualEditor15",
             "Effect": "Allow",
             "Action": "iam:CreateServiceLinkedRole",
             "Resource": "*",
@@ -190,7 +223,21 @@
             }
         },
         {
-            "Sid": "VisualEditor14",
+            "Sid": "VisualEditor16",
+            "Effect": "Allow",
+            "Action": "kms:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor17",
             "Effect": "Allow",
             "Action": "lambda:*",
             "Resource": "*",
@@ -198,13 +245,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor15",
+            "Sid": "VisualEditor18",
             "Effect": "Allow",
             "Action": "license-manager:*",
             "Resource": "*",
@@ -212,13 +259,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor16",
+            "Sid": "VisualEditor19",
             "Effect": "Allow",
             "Action": "logs:*",
             "Resource": "*",
@@ -226,13 +273,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor17",
+            "Sid": "VisualEditor20",
             "Effect": "Allow",
             "Action": "organizations:*",
             "Resource": "*",
@@ -240,13 +287,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor18",
+            "Sid": "VisualEditor21",
             "Effect": "Allow",
             "Action": "pricing:*",
             "Resource": "*",
@@ -254,13 +301,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor19",
+            "Sid": "VisualEditor22",
             "Effect": "Allow",
             "Action": "securityhub:*",
             "Resource": "*",
@@ -268,13 +315,13 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor20",
+            "Sid": "VisualEditor23",
             "Effect": "Allow",
             "Action": [
                 "sns:CreatePlatformApplication",
@@ -303,13 +350,27 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         },
         {
-            "Sid": "VisualEditor21",
+            "Sid": "VisualEditor24",
+            "Effect": "Allow",
+            "Action": "workspaces:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor25",
             "Effect": "Allow",
             "Action": "sns:*",
             "Resource": "arn:aws:sns:*:*:*",
@@ -317,8 +378,8 @@
                 "StringEquals": {
                     "aws:RequestedRegion": "us-west-2"
                 },
-                "Null": {
-                    "aws:MultiFactorAuthAge": "false"
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
                 }
             }
         }
