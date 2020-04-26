@@ -18,7 +18,7 @@
         {
             "Sid": "VisualEditor1",
             "Effect": "Allow",
-            "Action": "appstream:*",
+            "Action": "apigateway:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -32,7 +32,7 @@
         {
             "Sid": "VisualEditor2",
             "Effect": "Allow",
-            "Action": "autoscaling:*",
+            "Action": "appstream:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -46,7 +46,7 @@
         {
             "Sid": "VisualEditor3",
             "Effect": "Allow",
-            "Action": "autoscaling-plans:*",
+            "Action": "autoscaling:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -60,7 +60,7 @@
         {
             "Sid": "VisualEditor4",
             "Effect": "Allow",
-            "Action": "cloudtrail:*",
+            "Action": "autoscaling-plans:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -74,7 +74,7 @@
         {
             "Sid": "VisualEditor5",
             "Effect": "Allow",
-            "Action": "cloudwatch:*",
+            "Action": "cloudtrail:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -88,7 +88,7 @@
         {
             "Sid": "VisualEditor6",
             "Effect": "Allow",
-            "Action": "config:*",
+            "Action": "cloudwatch:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -102,7 +102,7 @@
         {
             "Sid": "VisualEditor7",
             "Effect": "Allow",
-            "Action": "detective:*",
+            "Action": "config:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -116,7 +116,7 @@
         {
             "Sid": "VisualEditor8",
             "Effect": "Allow",
-            "Action": "ds:*",
+            "Action": "detective:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -130,7 +130,7 @@
         {
             "Sid": "VisualEditor9",
             "Effect": "Allow",
-            "Action": "ec2:*",
+            "Action": "ds:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -144,7 +144,7 @@
         {
             "Sid": "VisualEditor10",
             "Effect": "Allow",
-            "Action": "ecr:*",
+            "Action": "ec2:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -158,7 +158,7 @@
         {
             "Sid": "VisualEditor11",
             "Effect": "Allow",
-            "Action": "ecs:*",
+            "Action": "ecr:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -172,7 +172,7 @@
         {
             "Sid": "VisualEditor12",
             "Effect": "Allow",
-            "Action": "elasticloadbalancing:*",
+            "Action": "ecs:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -200,7 +200,7 @@
         {
             "Sid": "VisualEditor14",
             "Effect": "Allow",
-            "Action": "fms:*",
+            "Action": "elasticloadbalancing:*",
             "Resource": "*",
             "Condition": {
                 "StringEquals": {
@@ -214,6 +214,20 @@
         {
             "Sid": "VisualEditor15",
             "Effect": "Allow",
+            "Action": "fms:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor16",
+            "Effect": "Allow",
             "Action": "iam:CreateServiceLinkedRole",
             "Resource": "*",
             "Condition": {
@@ -223,7 +237,7 @@
             }
         },
         {
-            "Sid": "VisualEditor16",
+            "Sid": "VisualEditor17",
             "Effect": "Allow",
             "Action": "kms:*",
             "Resource": "*",
@@ -237,7 +251,7 @@
             }
         },
         {
-            "Sid": "VisualEditor17",
+            "Sid": "VisualEditor18",
             "Effect": "Allow",
             "Action": "lambda:*",
             "Resource": "*",
@@ -251,7 +265,7 @@
             }
         },
         {
-            "Sid": "VisualEditor18",
+            "Sid": "VisualEditor19",
             "Effect": "Allow",
             "Action": "license-manager:*",
             "Resource": "*",
@@ -265,7 +279,7 @@
             }
         },
         {
-            "Sid": "VisualEditor19",
+            "Sid": "VisualEditor20",
             "Effect": "Allow",
             "Action": "logs:*",
             "Resource": "*",
@@ -279,7 +293,7 @@
             }
         },
         {
-            "Sid": "VisualEditor20",
+            "Sid": "VisualEditor21",
             "Effect": "Allow",
             "Action": "organizations:*",
             "Resource": "*",
@@ -293,7 +307,7 @@
             }
         },
         {
-            "Sid": "VisualEditor21",
+            "Sid": "VisualEditor22",
             "Effect": "Allow",
             "Action": "pricing:*",
             "Resource": "*",
@@ -307,7 +321,7 @@
             }
         },
         {
-            "Sid": "VisualEditor22",
+            "Sid": "VisualEditor23",
             "Effect": "Allow",
             "Action": "securityhub:*",
             "Resource": "*",
@@ -321,7 +335,7 @@
             }
         },
         {
-            "Sid": "VisualEditor23",
+            "Sid": "VisualEditor24",
             "Effect": "Allow",
             "Action": [
                 "sns:CreatePlatformApplication",
@@ -356,7 +370,7 @@
             }
         },
         {
-            "Sid": "VisualEditor24",
+            "Sid": "VisualEditor25",
             "Effect": "Allow",
             "Action": "workspaces:*",
             "Resource": "*",
@@ -370,7 +384,7 @@
             }
         },
         {
-            "Sid": "VisualEditor25",
+            "Sid": "VisualEditor26",
             "Effect": "Allow",
             "Action": "sns:*",
             "Resource": "arn:aws:sns:*:*:*",
