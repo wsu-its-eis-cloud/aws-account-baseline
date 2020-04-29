@@ -372,6 +372,12 @@
         {
             "Sid": "VisualEditor25",
             "Effect": "Allow",
+            "Action": "ssm:*",
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor26",
+            "Effect": "Allow",
             "Action": "workspaces:*",
             "Resource": "*",
             "Condition": {
@@ -384,7 +390,7 @@
             }
         },
         {
-            "Sid": "VisualEditor26",
+            "Sid": "VisualEditor27",
             "Effect": "Allow",
             "Action": "sns:*",
             "Resource": "arn:aws:sns:*:*:*",
