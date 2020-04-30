@@ -1,0 +1,45 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+				"access-analyzer:*",
+				"cloudtrail:*",
+				"cloudwatch:*",
+				"config:*",
+				"detective:*",
+				"fms:*",
+				"kms:*",
+				"license-manager:*",
+				"logs:*",
+				"securityhub:*",
+				"ssm:*"
+			],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+		{
+            "Sid": "CustomEditor1",
+            "Effect": "Allow",
+            "Action": "securityhub:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-east-1"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        }
+	]
+}

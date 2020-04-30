@@ -73,116 +73,84 @@ $accountid = (Get-STSCallerIdentity @session).Account
 
 # Create WSU policies
 # Get the list of existing policies
+$policies = @()
 $policyList = Get-IAMPolicyList -Scope Local @session
-if(($policyList | Where-Object {$_.PolicyName -eq "WsuRegionUsWest2ScopedAdministrator"}).Count -eq 0) {
-    $usWestAdmin = New-IAMPolicy -PolicyName WsuRegionUsWest2ScopedAdministrator -PolicyDocument (Get-content -Raw WsuRegionUsWest2ScopedAdministrator.json) @session -Force
-    $usWestAdmin | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
+Import-Csv WSUIamPolicies.csv | ForEach-Object {
+    $policy = $_
 
-if(($policyList | Where-Object {$_.PolicyName -eq "WsuRegionUsEast1CloudWatchAdmin"}).Count -eq 0) {
-    $cloudwatchAdmin = New-IAMPolicy -PolicyName WsuRegionUsEast1CloudWatchAdmin -PolicyDocument (Get-content -Raw WsuRegionUsEast1CloudWatchAdmin.json) @session -Force
-    $cloudwatchAdmin | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
-
-if(($policyList | Where-Object {$_.PolicyName -eq "WsuRegionDisableAll"}).Count -eq 0) {
-    $disableRegionsPolicy = New-IAMPolicy -PolicyName WsuRegionDisableAll -PolicyDocument (Get-content -Raw WsuRegionDisableAll.json) @session -Force
-    $disableRegionsPolicy | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
-
-if(($policyList | Where-Object {$_.PolicyName -eq "WsuAccountPortalFullAccess"}).Count -eq 0) {
-    $accountPortalPolicy = New-IAMPolicy -PolicyName WsuAccountPortalFullAccess -PolicyDocument (Get-content -Raw WsuAccountPortalFullAccess.json) @session -Force
-    $accountPortalPolicy | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+    if(($policyList | Where-Object {$_.PolicyName -eq $policy.PolicyName}).Count -eq 0) {
+        $temp = New-IAMPolicy -PolicyName $policy.PolicyName -PolicyDocument (Get-content -Raw $policy.PolicyDocument) @session -Force
+        $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+        $policies = $policies + $temp
+    }
 }
 
 # Create groups
 # Gets the list of groups
+$groups = @()
 $groupList = Get-IAMGroupList @session
+Import-Csv WSUIamGroups.csv | ForEach-Object {
+    $group = $_
 
-if(($groupList | Where-Object {$_.GroupName -eq "Administrators"}).Count -eq 0) {
-    $adminGroup = New-IAMGroup -GroupName Administrators @session -Force
-    $adminGroup | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
-
-if(($groupList | Where-Object {$_.GroupName -eq "FinancialAdministrators"}).Count -eq 0) {
-    $financialAdminGroup = New-IAMGroup -GroupName FinancialAdministrators @session -Force
-    $financialAdminGroup | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
-
-if(($groupList | Where-Object {$_.GroupName -eq "Administrators"}).Count -eq 0) {
-    $supportAccessGroup = New-IAMGroup -GroupName SupportAccess @session -Force
-    $supportAccessGroup | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+    if(($groupList | Where-Object {$_.GroupName -eq $group.GroupName}).Count -eq 0) {
+        $temp = New-IAMGroup -GroupName $group.GroupName @session -Force
+        $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+        $groups = $groups + $temp
+    }
 }
 
 # Create service-linked roles
 # Gets the list of roles
+$roles = @()
 $roleList = Get-IAMRoleList @session
+Import-Csv WSUIamRoles.csv | ForEach-Object {
+    $role = $_
 
-if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForAccessAnalyzer"}).Count -eq 0) {
-    $accessAnalyzerRole = New-IAMServiceLinkedRole -AWSServiceName access-analyzer.amazonaws.com @session
-    $accessAnalyzerRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+    if(($roleList | Where-Object {$_.RoleName -eq $role.RoleName}).Count -eq 0) {
+        $temp = New-IAMRole -RoleName $role.RoleName -AssumeRolePolicyDocument (Get-content -Raw $role.AssumeRolePolicyDocument).Replace("{accountid}", $accountid) @session
+        $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+        $roles = $roles + $temp
+    }
 }
 
-if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForAmazonGuardDuty"}).Count -eq 0) {
-    $guardDutyRole = New-IAMServiceLinkedRole -AWSServiceName guardduty.amazonaws.com @session
-    $guardDutyRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+Import-Csv WSUIamServiceLinkedRoles.csv | ForEach-Object {
+    $role = $_
+
+    if(($roleList | Where-Object {$_.RoleName -eq $role.RoleName}).Count -eq 0) {
+        $temp = New-IAMServiceLinkedRole -AWSServiceName $role.AWSServiceName @session
+        $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+        $roles = $roles + $temp
+    }
 }
 
-if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForConfig"}).Count -eq 0) {
-    $configServiceRole = New-IAMServiceLinkedRole -AWSServiceName config.amazonaws.com @session
-    $configServiceRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
-
-if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForSecurityHub"}).Count -eq 0) {
-    $securityHubRole = New-IAMServiceLinkedRole -AWSServiceName securityhub.amazonaws.com @session
-    $securityHubRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
-
-if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForECS"}).Count -eq 0) {
-    $ecsRole = New-IAMServiceLinkedRole -AWSServiceName ecs.amazonaws.com @session
-    $ecsRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
-
-if(($roleList | Where-Object {$_.RoleName -eq "AWSServiceRoleForElasticLoadBalancing"}).Count -eq 0) {
-    $elbRole = New-IAMServiceLinkedRole -AWSServiceName elasticloadbalancing.amazonaws.com @session
-    $elbRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
-
-# Create support access role
-if(($roleList | Where-Object {$_.RoleName -eq "AWSSupportAccessRole"}).Count -eq 0) {
-    $supportAccessRole = New-IAMRole -RoleName AWSSupportAccessRole -AssumeRolePolicyDocument (Get-content -Raw AWSSupportAccessRole-TrustPolicyDocument.json).Replace("{accountid}", $accountid) @session
-    $supportAccessRole | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-}
 
 # Pause to allow custom objects to propogate
 Write-Output ("`t Waiting for objects to propogate...")
 Start-Sleep -Seconds 5
 
-# Refresh our policy list to reflect newly created policies (needed for non-destructive re-run)
-$policyList = Get-IAMPolicyList -Scope Local @session
-$policyList | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-$usWestAdmin = ($policyList | Where-Object {$_.PolicyName -eq "WsuRegionUsWest2ScopedAdministrator"})[0]
-$cloudwatchAdmin = ($policyList | Where-Object {$_.PolicyName -eq "WsuRegionUsEast1CloudWatchAdmin"})[0]
-$disableRegionsPolicy = ($policyList | Where-Object {$_.PolicyName -eq "WsuRegionDisableAll"})[0]
-$accountPortalPolicy = ($policyList | Where-Object {$_.PolicyName -eq "WsuAccountPortalFullAccess"})[0]
+# Register group policies
+Import-Csv WSUIamGroupPolicy.csv | ForEach-Object {
+    $groupPolicy = $_
+    foreach($group in $groups) {
+        foreach($policy in $policies) {
+            if($groupPolicy.GroupName -eq $group.GroupName -and $groupPolicy.PolicyName -eq $policy.PolicyName) {
+                Register-IAMGroupPolicy -GroupName $group.GroupName -PolicyArn $policy.Arn @session -Force
+            }
+        }
+    }
+}
 
-# Register policies on administrators group
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $usWestAdmin.Arn @session -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $cloudwatchAdmin.Arn @session -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn $disableRegionsPolicy.Arn @session -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/IAMFullAccess @session -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/AmazonS3FullAccess @session -Force
-Register-IAMGroupPolicy -GroupName Administrators -PolicyArn arn:aws:iam::aws:policy/job-function/Billing @session -Force
-
-# Register policies on financial administrators group
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn $accountPortalPolicy.Arn @session -Force
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/job-function/Billing @session -Force
-
-# Register policies on support access group
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/job-function/SupportUser @session -Force
-Register-IAMGroupPolicy -GroupName FinancialAdministrators -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess @session -Force
-
-# Register policies on support role
-Register-IAMRolePolicy -RoleName AWSSupportAccessRole -PolicyArn arn:aws:iam::aws:policy/AWSSupportAccess @session
+# Register role policies
+Import-Csv WSUIamRolePolicy.csv | ForEach-Object {
+    $rolePolicy = $_
+    foreach($role in $roles) {
+        foreach($policy in $policies) {
+            if($rolePolicy.RoleName -eq $role.RoleName -and $rolePolicy.PolicyName -eq $policy.PolicyName) {
+                Register-IAMRolePolicy -RoleName $rolePolicy.RoleName -PolicyArn $rolePolicy.PolicyArn @session
+            }
+        }
+    }
+}
 
 Write-Output ("`t Policies successfully attached.")
 

@@ -1,0 +1,77 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "CustomEditor0",
+            "Effect": "Allow",
+            "Action": [
+				"appstream:*",
+				"autoscaling:*",
+				"autoscaling-plans:*",
+				"cloudwatch:*",
+				"config:*",
+				"ds:*",
+				"ec2:*",
+				"ecr:*",
+				"ecs:*",
+				"elasticloadbalancing:*",
+				"fms:*",
+				"kms:*",
+				"lambda:*",
+				"license-manager:*",
+				"logs:*",
+				"securityhub:*",
+				"sns:*",
+				"ssm:*",
+				"workspaces:*"
+			],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+		{
+            "Sid": "CustomEditor1",
+            "Effect": "Allow",
+            "Action": "securityhub:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-east-1"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "CustomEditor2",
+            "Effect": "Allow",
+            "Action": "cloudwatch:*",
+            "Resource": [
+                "arn:aws:cloudwatch::*:dashboard/*",
+                "arn:aws:cloudwatch:*:*:insight-rule/*",
+                "arn:aws:cloudwatch:*:*:alarm:*"
+            ],
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-east-1"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        },
+        {
+            "Sid": "CustomEditor3",
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": "*"
+        }
+	]
+}

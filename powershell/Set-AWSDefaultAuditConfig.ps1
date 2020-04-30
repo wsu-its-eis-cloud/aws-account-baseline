@@ -83,7 +83,7 @@ if(!$bucket) {
 
     # Configure bucket policy
     Add-S3PublicAccessBlock -BucketName $bucketName -PublicAccessBlockConfiguration_BlockPublicAcl $true -PublicAccessBlockConfiguration_BlockPublicPolicy $true -PublicAccessBlockConfiguration_IgnorePublicAcl $true -PublicAccessBlockConfiguration_RestrictPublicBucket $true @session
-    Write-S3BucketPolicy -BucketName $bucketName -Policy (Get-content -Raw WsuS3ConfigBucketPolicy.json).Replace("{accountid}", $account) @session
+    Write-S3BucketPolicy -BucketName $bucketName -Policy (Get-content -Raw WSUPolicy_S3BucketConfig_Global.json).Replace("{accountid}", $account) @session
     Write-S3BucketVersioning -BucketName $bucketName -VersioningConfig_Status Enabled @session
 
     # Configure bucket encryption

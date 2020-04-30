@@ -1,0 +1,7 @@
+"RoleName","AWSServiceName"
+"AWSServiceRoleForAccessAnalyzer","access-analyzer.amazonaws.com"
+"AWSServiceRoleForAmazonGuardDuty","guardduty.amazonaws.com"
+"AWSServiceRoleForConfig","config.amazonaws.com"
+"AWSServiceRoleForSecurityHub","securityhub.amazonaws.com"
+"AWSServiceRoleForECS","ecs.amazonaws.com"
+"AWSServiceRoleForElasticLoadBalancing","elasticloadbalancing.amazonaws.com"

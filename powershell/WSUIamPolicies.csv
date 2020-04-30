@@ -1,0 +1,7 @@
+"PolicyName","PolicyDocument"
+"WSUPolicy_AccountDisableAll_Global","WSUPolicy_AccountDisableAll_Global.json"
+"WSUPolicy_ComputeAdministrator_USWest2_MFAAge","WSUPolicy_ComputeAdministrator_USWest2_MFAAge.json"
+"WSUPolicy_DeveloperAdministrator_USWest2_MFAAge","WSUPolicy_DeveloperAdministrator_USWest2_MFAAge.json"
+"WSUPolicy_FinanceAdministrator_USWest2_MFAAge","WSUPolicy_FinanceAdministrator_USWest2_MFAAge.json"
+"WSUPolicy_IdentityAdministrator_Global_MFAAge","WSUPolicy_IdentityAdministrator_Global_MFAAge.json"
+"WSUPolicy_SecurityAdministrator_USWest2_MFAAge","WSUPolicy_SecurityAdministrator_USWest2_MFAAge.json"
