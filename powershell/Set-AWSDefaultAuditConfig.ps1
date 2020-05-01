@@ -102,6 +102,9 @@ $cfgRecorder = Get-CFGConfigurationRecorder @session
 if(!$cfgRecorder) {
     $roleArn = ("arn:aws:iam::{0}:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig" -f $account)
     $cfgRecorder = Write-CFGConfigurationRecorder -ConfigurationRecorderName default -RecordingGroup_AllSupported $true -RecordingGroup_IncludeGlobalResourceType $true -ConfigurationRecorder_RoleARN $roleArn @session
+    Start-Sleep 2
+    
+    $cfgRecorder = Get-CFGConfigurationRecorder -ConfigurationRecorderName default @session
     $cfgRecorder | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
@@ -112,7 +115,6 @@ if(!$cfgChannel) {
 }
 
 # Start the recorder if it is stopped
-Start-Sleep 5
 $cfgRecorderStatus = Get-CFGConfigurationRecorderStatus @session
 if(!$cfgRecorderStatus.Recording) {
     Start-CFGConfigurationRecorder -ConfigurationRecorderName $cfgRecorder.Name @session
