@@ -8,6 +8,7 @@
 				"appstream:*",
 				"autoscaling:*",
 				"autoscaling-plans:*",
+				"cloudformation:*",
 				"cloudwatch:*",
 				"config:*",
 				"ds:*",
