@@ -21,6 +21,7 @@
 				"lambda:*",
 				"license-manager:*",
 				"logs:*",
+				"ram:*",
 				"securityhub:*",
 				"sns:*",
 				"ssm:*",
