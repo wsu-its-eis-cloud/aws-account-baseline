@@ -93,9 +93,7 @@ foreach($region in $regions) {
     $vpcs = Get-EC2Vpc -Region $region.RegionName @session
     foreach($vpc in $vpcs) {
 
-        if ($vpc.Tags.Count -ne 0 -AND $vpc.CidrBlock.ToString() -ne "172.31.0.0/16") {
-            Write-Output ("`t Skipping VPC: {0}." -f $vpc.VpcId)
-        } else {
+        if ($vpc.Tags.Count -eq 0 -AND $vpc.CidrBlock.ToString() -eq "172.31.0.0/16") {
             # Build filters for IGW objects
             $filters = @()
             $filter = New-Object -TypeName Amazon.EC2.Model.Filter
@@ -132,6 +130,8 @@ foreach($region in $regions) {
             # Remove VPC
             Write-Output ("`t Removing VPC: {0}." -f $vpc.VpcId)
             Remove-EC2Vpc -VpcId $vpc.VpcId -Region $region.RegionName @session -Force
+        } else {
+            Write-Output ("`t Skipping VPC: {0}." -f $vpc.VpcId)
         }
     }
 }
