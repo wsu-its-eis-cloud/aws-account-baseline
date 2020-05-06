@@ -22,6 +22,7 @@
 				"license-manager:*",
 				"logs:*",
 				"ram:*",
+                "resource-groups:*",
 				"securityhub:*",
 				"sns:*",
 				"ssm:*",
