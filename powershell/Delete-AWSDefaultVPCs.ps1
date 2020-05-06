@@ -95,45 +95,44 @@ foreach($region in $regions) {
 
         if ($vpc.Tags.Count -ne 0 -AND $vpc.CidrBlock.ToString() -ne "172.31.0.0/16") {
             Write-Output ("`t Skipping VPC: {0}." -f $vpc.VpcId)
-            continue;
+        } else {
+            # Build filters for IGW objects
+            $filters = @()
+            $filter = New-Object -TypeName Amazon.EC2.Model.Filter
+            $filter.Name = "attachment.vpc-id"
+            $filter.Values.Add($vpc.VpcId)
+            $filters += $filter
+
+            # Remove IGW's
+            Write-Output ("`t")
+            $igws = Get-EC2InternetGateway -Region $region.RegionName -Filter $filters @session
+            foreach($igw in $igws) {
+
+                Write-Output ("`t Dismounting IGW: {0}." -f $igw.InternetGatewayId)
+                Dismount-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId -VpcId $vpc.VpcId  @session -Force
+
+                Write-Output ("`t Removing IGW: {0}." -f $igw.InternetGatewayId)
+                Remove-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId @session -Force
+            }
+
+            # Rebuild filters targeting subnet and routetable filters
+            $filters = @()
+            $filter = New-Object -TypeName Amazon.EC2.Model.Filter
+            $filter.Name = "vpc-id"
+            $filter.Values.Add($vpc.VpcId)
+            $filters += $filter
+
+            # Remove subnets
+            $subnets = Get-EC2Subnet -Region $region.RegionName -Filter $filters @session
+            foreach($subnet in $subnets) {
+                Write-Output ("`t Removing subnet: {0}." -f $subnet.SubnetId)
+                Remove-EC2Subnet -Region $region.RegionName -SubnetId $subnet.SubnetId @session -Force
+            }
+
+            # Remove VPC
+            Write-Output ("`t Removing VPC: {0}." -f $vpc.VpcId)
+            Remove-EC2Vpc -VpcId $vpc.VpcId -Region $region.RegionName @session -Force
         }
-        
-        # Build filters for IGW objects
-        $filters = @()
-        $filter = New-Object -TypeName Amazon.EC2.Model.Filter
-        $filter.Name = "attachment.vpc-id"
-        $filter.Values.Add($vpc.VpcId)
-        $filters += $filter
-
-        # Remove IGW's
-        Write-Output ("`t")
-        $igws = Get-EC2InternetGateway -Region $region.RegionName -Filter $filters @session
-        foreach($igw in $igws) {
-
-            Write-Output ("`t Dismounting IGW: {0}." -f $igw.InternetGatewayId)
-            Dismount-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId -VpcId $vpc.VpcId  @session -Force
-
-            Write-Output ("`t Removing IGW: {0}." -f $igw.InternetGatewayId)
-            Remove-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId @session -Force
-        }
-
-        # Rebuild filters targeting subnet and routetable filters
-        $filters = @()
-        $filter = New-Object -TypeName Amazon.EC2.Model.Filter
-        $filter.Name = "vpc-id"
-        $filter.Values.Add($vpc.VpcId)
-        $filters += $filter
-
-        # Remove subnets
-        $subnets = Get-EC2Subnet -Region $region.RegionName -Filter $filters @session
-        foreach($subnet in $subnets) {
-            Write-Output ("`t Removing subnet: {0}." -f $subnet.SubnetId)
-            Remove-EC2Subnet -Region $region.RegionName -SubnetId $subnet.SubnetId @session -Force
-        }
-
-        # Remove VPC
-        Write-Output ("`t Removing VPC: {0}." -f $vpc.VpcId)
-        Remove-EC2Vpc -VpcId $vpc.VpcId -Region $region.RegionName @session -Force
     }
 }
 
