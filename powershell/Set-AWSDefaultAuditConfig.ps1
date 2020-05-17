@@ -214,7 +214,6 @@ if($cisStandardSubscriptionArn) {
                 Write-Output ("`t`t Disabling {0}" -f $_.ControlId)
                 Start-Sleep 1
                 Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason @session
-                
             }
         }
     }
@@ -230,13 +229,15 @@ if($pciStandardSubscriptionArn) {
                 Write-Output ("`t`t Disabling {0}" -f $_.ControlId)
                 Start-Sleep 1
                 Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason @session
-                
             }
         }
     }
 } else {
     Write-Output ("`t AWS CIS Standard not enabled.")
 }
+
+# Require EBS volumes to be encrypted
+Enable-EC2EbsEncryptionByDefault @session
 
 Write-Output ("`t Compliance configurations complete.")
 
