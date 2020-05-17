@@ -7,6 +7,7 @@
             "Action": [
 				"apigateway:*",
 				"cloudwatch:*",
+				"codecommit:*",
 				"ecr:*",
 				"ecs:*",
 				"elasticloadbalancing:*",

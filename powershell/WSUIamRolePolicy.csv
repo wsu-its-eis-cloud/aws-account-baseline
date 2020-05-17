@@ -1,2 +1,2 @@
 "RoleName","PolicyArn"
-"AWSSupportAccessRole","arn:aws:iam::aws:policy/AWSSupportAccess"
+"WSUSupportAccessRole","arn:aws:iam::aws:policy/AWSSupportAccess"
