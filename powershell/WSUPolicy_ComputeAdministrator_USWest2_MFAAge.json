@@ -5,6 +5,7 @@
             "Sid": "CustomEditor0",
             "Effect": "Allow",
             "Action": [
+				"application-autoscaling:*",
 				"appstream:*",
 				"autoscaling:*",
 				"autoscaling-plans:*",

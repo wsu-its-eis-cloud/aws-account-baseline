@@ -1,0 +1,23 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeTags",
+                "ec2:DescribeSecurityGroups",
+                "ec2:AuthorizeSecurityGroupIngress"
+            ],
+            "Resource": "arn:aws:ec2:*:*:security-group/*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:RequestedRegion": "us-west-2"
+                },
+                "NumericLessThan": {
+                    "aws:MultiFactorAuthAge": "14400"
+                }
+            }
+        }
+    ]
+}

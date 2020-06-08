@@ -60,3 +60,12 @@ else {
     Write-Host "Module Import-Module AWS.Tools.SecurityHub has not been installed.  Please run this libraries setup script."
     return;
 }
+
+# Check for Lambda module
+if (Get-Module -ListAvailable -Name AWS.Tools.Lambda) {
+    Import-Module AWS.Tools.Lambda
+} 
+else {
+    Write-Host "Module Import-Module AWS.Tools.Lambda has not been installed.  Please run this libraries setup script."
+    return;
+}
