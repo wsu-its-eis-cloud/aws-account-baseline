@@ -65,5 +65,10 @@ $session = @{
 }
 
 $deploymentFileInfo = Get-Item DeleteExpiredServiceAccess-lambda.zip
+$role = Get-IAMRole -RoleName WSUSGIngressManager @session
+$lambda = Publish-LMFunction -FunctionName DeleteExpiredServiceAccess -Code_ZipFile $deploymentFileInfo -Handler lambda_function -Role $role.Arn -Runtime python3.8 @session
 
-$lambda = Publish-LMFunction -FunctionName DeleteExpiredServiceAccess -Code_ZipFile $deploymentFileInfo @session
+# Check if we are transcribing
+if($transcribe) {
+    Stop-Transcript
+}

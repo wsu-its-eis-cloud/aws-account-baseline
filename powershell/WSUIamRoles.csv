@@ -1,2 +1,3 @@
 "RoleName","AssumeRolePolicyDocument"
 "WSUSupportAccessRole","WSUPolicy_SupportAccessRole_TrustPolicyDocument.json"
+"WSUSGIngressManager","WSUPolicy_SGIngressManager_TrustPolicyDocument.json"

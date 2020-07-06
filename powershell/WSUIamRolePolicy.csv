@@ -1,2 +1,3 @@
-"RoleName","PolicyArn"
-"WSUSupportAccessRole","arn:aws:iam::aws:policy/AWSSupportAccess"
+"RoleName","PolicyName","PolicyArn"
+"WSUSupportAccessRole","AWSSupportAccess","arn:aws:iam::aws:policy/AWSSupportAccess"
+"WSUSGIngressManager","WSUPolicy_SecurityGroupRevokeIngress_Lambda","arn:aws:iam::<accountId>:policy/WSUPolicy_SecurityGroupRevokeIngress_Lambda"

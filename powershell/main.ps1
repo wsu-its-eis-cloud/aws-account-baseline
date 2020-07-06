@@ -90,6 +90,12 @@ Write-Output ("Configuring compliance policies.")
 Write-Output ("Compliance policy set.")
 Write-Output ("")
 
+Write-Output ("")
+Write-Output ("Enabling dynamic service access.")
+.\Set-AWSDefaultAuditConfig.ps1
+Write-Output ("Dynamic service access set.")
+Write-Output ("")
+
 # Build final checklist
 $checklist = Get-Content -Raw _ChecklistTemplate.csv
 $signinlink = ("https://{0}.signin.aws.amazon.com/console" -f $accountName)

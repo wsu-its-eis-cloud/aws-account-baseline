@@ -77,9 +77,14 @@ $policies = @()
 $policyList = Get-IAMPolicyList -Scope Local @session
 Import-Csv WSUIamPolicies.csv | ForEach-Object {
     $policy = $_
-
-    if(($policyList | Where-Object {$_.PolicyName -eq $policy.PolicyName}).Count -eq 0) {
-        $temp = New-IAMPolicy -PolicyName $policy.PolicyName -PolicyDocument (Get-content -Raw $policy.PolicyDocument) @session -Force
+    if($policy.PolicyDocument.Length -gt 0) {
+        if(($policyList | Where-Object {$_.PolicyName -eq $policy.PolicyName}).Count -eq 0) {
+            $temp = New-IAMPolicy -PolicyName $policy.PolicyName -PolicyDocument (Get-content -Raw $policy.PolicyDocument) @session -Force
+            $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
+            $policies = $policies + $temp
+        }
+    } elseif ($policy.PolicyArn.Length -gt 0) {
+        $temp = Get-IAMPolicy -PolicyArn $policy.PolicyArn @session
         $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
         $policies = $policies + $temp
     }
@@ -146,7 +151,8 @@ Import-Csv WSUIamRolePolicy.csv | ForEach-Object {
     foreach($role in $roles) {
         foreach($policy in $policies) {
             if($rolePolicy.RoleName -eq $role.RoleName -and $rolePolicy.PolicyName -eq $policy.PolicyName) {
-                Register-IAMRolePolicy -RoleName $rolePolicy.RoleName -PolicyArn $rolePolicy.PolicyArn @session
+                #Write-Host "Hit"
+                Register-IAMRolePolicy -RoleName $rolePolicy.RoleName -PolicyArn $rolePolicy.PolicyArn.Replace("<accountId>", $accountid) @session
             }
         }
     }

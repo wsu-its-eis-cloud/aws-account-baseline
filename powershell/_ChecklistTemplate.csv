@@ -28,3 +28,4 @@
 "Enroll in SOC Security Hub","",""
 "Delete setup account","",""
 "Create IAM account for customer","",""
+"Create CloudWatch event to trigger Dynamic Service Access Lambda","",""

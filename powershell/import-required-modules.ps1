@@ -69,3 +69,12 @@ else {
     Write-Host "Module Import-Module AWS.Tools.Lambda has not been installed.  Please run this libraries setup script."
     return;
 }
+
+# Check for CloudWatch module
+if (Get-Module -ListAvailable -Name AWS.Tools.CloudWatch) {
+    Import-Module AWS.Tools.CloudWatch
+} 
+else {
+    Write-Host "Module Import-Module AWS.Tools.CloudWatch has not been installed.  Please run this libraries setup script."
+    return;
+}
