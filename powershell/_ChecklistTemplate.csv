@@ -26,6 +26,7 @@
 "","Disable Cloud Watch Controls","X"
 "Deactivate unused STS endpoints","https://console.aws.amazon.com/iam/home#/account_settings",""
 "Enroll in SOC Security Hub","",""
+"Configure Systems Manager to use management-mode tag","",""
 "Delete setup account","",""
 "Create IAM account for customer","",""
 "Create CloudWatch event to trigger Dynamic Service Access Lambda","",""
