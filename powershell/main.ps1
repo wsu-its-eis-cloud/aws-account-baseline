@@ -92,7 +92,7 @@ Write-Output ("")
 
 Write-Output ("")
 Write-Output ("Enabling dynamic service access.")
-.\Set-AWSDefaultAuditConfig.ps1
+.\Enable-AWSDynamicServiceAccess.ps1
 Write-Output ("Dynamic service access set.")
 Write-Output ("")
 
