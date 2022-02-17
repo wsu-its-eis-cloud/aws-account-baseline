@@ -108,9 +108,11 @@ foreach($region in $regions) {
 
                 Write-Output ("`t Dismounting IGW: {0}." -f $igw.InternetGatewayId)
                 Dismount-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId -VpcId $vpc.VpcId  @session -Force
-
+				Start-Sleep 5
+				
                 Write-Output ("`t Removing IGW: {0}." -f $igw.InternetGatewayId)
                 Remove-EC2InternetGateway -Region $region.RegionName -InternetGatewayId $igw.InternetGatewayId @session -Force
+				Start-Sleep 5
             }
 
             # Rebuild filters targeting subnet and routetable filters
@@ -126,6 +128,7 @@ foreach($region in $regions) {
                 Write-Output ("`t Removing subnet: {0}." -f $subnet.SubnetId)
                 Remove-EC2Subnet -Region $region.RegionName -SubnetId $subnet.SubnetId @session -Force
             }
+			Start-Sleep 5
 
             # Remove VPC
             Write-Output ("`t Removing VPC: {0}." -f $vpc.VpcId)
