@@ -5,7 +5,9 @@
             "Sid": "VisualEditor0",
             "Effect": "Allow",
             "Action": [
-				"iam:*"
+				"iam:*",
+		    		"sso:*",
+		    		"sso-directory:*"
 			],
             "Resource": "*",
             "Condition": {
