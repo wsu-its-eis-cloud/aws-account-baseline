@@ -16,6 +16,7 @@ To apply this baseline to a new AWS account, perform the following:
 
 * Perform a git pull
 * Run setup.ps1 as administrator
-* Use https://github.com/wsu-its-eis-cloud/aws-api-session-management to generate a secure session.
+* set AWS session environment variables
+* ensure Default region is set to us-west-2 ( $Env:AWS_DEFAULT_REGION="us-west-2" )
 * Run main.ps1 -accountName <wsu-area-unit-function>
 * A zip of the transcript and outputs will be created. Store these in a secure location, and complete the generated checklist for new account configuration.
