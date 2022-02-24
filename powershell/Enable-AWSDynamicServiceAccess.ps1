@@ -1,7 +1,4 @@
 param(	
-    [Alias("s")]
-    [string] $sessionName = "awsDefaultSession",
-
     [Alias("t")]
     [switch] $transcribe = $false,
 	
@@ -14,13 +11,6 @@ if ($help) {
     Write-Output ("`t Prerequisites: Powershell, aws-api-session-management, included setup.ps1")
     Write-Output ("`t ")
     Write-Output ("`t Parameters:")
-    Write-Output ("`t ")
-    Write-Output ("`t sessionName")
-    Write-Output ("`t     The name of the global variable that stores the MFA validated AWS session.")
-    Write-Output ("`t     Default: {0}" -f $sessionName)
-    Write-Output ("`t     Alias: s")
-    Write-Output ("`t     Example: .\{0}.ps1 -sessionName {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
-    Write-Output ("`t     Example: .\{0}.ps1 -s {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
     Write-Output ("`t ")
     Write-Output ("`t transcribe")
     Write-Output ("`t     If set, creates a transcript of the script.")
@@ -44,29 +34,9 @@ if($transcribe) {
     Start-Transcript -Path $transcriptName
 }
 
-# Retrieve specified AWS STS session
-$globalSession = $null
-$expression = ("`$globalSession = `$global:{0}" -f $sessionName)
-Invoke-Expression -Command $expression
-
-# If the session is null, return false
-if($globalSession -eq $null) {
-    Write-Output ("`t Failed to retrieve specified AWS session.")
-
-    Stop-Transcript
-    return $false
-}
-
-# Creating session hashtable for parameter splatting
-$session = @{
-    'AccessKey'    = $globalSession.AccessKeyId;
-    'SecretKey'    = $globalSession.SecretAccessKey;
-    'SessionToken' = $globalSession.SessionToken;
-}
-
 $deploymentFileInfo = Get-Item DeleteExpiredServiceAccess-lambda.zip
-$role = Get-IAMRole -RoleName WSUSGIngressManager @session
-$lambda = Publish-LMFunction -FunctionName DeleteExpiredServiceAccess -Code_ZipFile $deploymentFileInfo -Handler lambda_function -Role $role.Arn -Runtime python3.8 @session
+$role = Get-IAMRole -RoleName WSUSGIngressManager
+$lambda = Publish-LMFunction -FunctionName DeleteExpiredServiceAccess -Code_ZipFile $deploymentFileInfo -Handler lambda_function -Role $role.Arn -Runtime python3.8
 
 # Check if we are transcribing
 if($transcribe) {

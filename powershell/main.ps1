@@ -2,9 +2,6 @@ param(
     [Alias("a")]
     [string] $accountName = "",
 
-    [Alias("s")]
-    [string] $sessionName = "awsDefaultSession",
-
     [Alias("t")]
     [switch] $transcribe = $true,
 	
@@ -14,23 +11,16 @@ param(
 
 if ($help) {
     Write-Output ("`t Configured a baseline set of IAM policies")
-    Write-Output ("`t Prerequisites: Powershell, aws-api-session-management, included setup.ps1")
+    Write-Output ("`t Prerequisites: Powershell, included setup.ps1")
     Write-Output ("`t ")
     Write-Output ("`t Parameters:")
     Write-Output ("`t ")
     Write-Output ("`t accountName")
     Write-Output ("`t     The name of the AWS account, e.g., its-aws-demo.  Used for setting signin-in alias.")
-    Write-Output ("`t     Default: {0}" -f $sessionName)
+    Write-Output ("`t     Default: {0}" -f $accountName)
     Write-Output ("`t     Alias: s")
     Write-Output ("`t     Example: .\{0}.ps1 -accountName {1}" -f $MyInvocation.MyCommand.Name, $accountName)
     Write-Output ("`t     Example: .\{0}.ps1 -a {1}" -f $MyInvocation.MyCommand.Name, $accountName)
-    Write-Output ("`t ")
-    Write-Output ("`t sessionName")
-    Write-Output ("`t     The name of the global variable that stores the MFA validated AWS session.")
-    Write-Output ("`t     Default: {0}" -f $sessionName)
-    Write-Output ("`t     Alias: s")
-    Write-Output ("`t     Example: .\{0}.ps1 -sessionName {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
-    Write-Output ("`t     Example: .\{0}.ps1 -s {1}" -f $MyInvocation.MyCommand.Name, $sessionName)Write-Output ("`t ")
     Write-Output ("`t ")
     Write-Output ("`t transcribe")
     Write-Output ("`t     If set, creates a transcript of the script.")

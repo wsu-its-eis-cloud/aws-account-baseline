@@ -1,7 +1,4 @@
 param(	
-    [Alias("s")]
-    [string] $sessionName = "awsDefaultSession",
-
     [Alias("t")]
     [switch] $transcribe = $false,
 	
@@ -14,13 +11,6 @@ if ($help) {
     Write-Output ("`t Prerequisites: Powershell, aws-api-session-management, included setup.ps1")
     Write-Output ("`t ")
     Write-Output ("`t Parameters:")
-    Write-Output ("`t ")
-    Write-Output ("`t sessionName")
-    Write-Output ("`t     The name of the global variable that stores the MFA validated AWS session.")
-    Write-Output ("`t     Default: {0}" -f $sessionName)
-    Write-Output ("`t     Alias: s")
-    Write-Output ("`t     Example: .\{0}.ps1 -sessionName {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
-    Write-Output ("`t     Example: .\{0}.ps1 -s {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
     Write-Output ("`t ")
     Write-Output ("`t transcribe")
     Write-Output ("`t     If set, creates a transcript of the script.")
@@ -44,36 +34,16 @@ if($transcribe) {
     Start-Transcript -Path $transcriptName
 }
 
-# Retrieve specified AWS STS session
-$globalSession = $null
-$expression = ("`$globalSession = `$global:{0}" -f $sessionName)
-Invoke-Expression -Command $expression
-
-# If the session is null, return false
-if($globalSession -eq $null) {
-    Write-Output ("`t Failed to retrieve specified AWS session.")
-
-    Stop-Transcript
-    return $false
-}
-
-# Creating session hashtable for parameter splatting
-$session = @{
-    'AccessKey'    = $globalSession.AccessKeyId;
-    'SecretKey'    = $globalSession.SecretAccessKey;
-    'SessionToken' = $globalSession.SessionToken;
-}
-
 # Test if bucket exists
-$account = (Get-STSCallerIdentity @session).Account
+$account = (Get-STSCallerIdentity ).Account
 $bucketName = ("config-bucket-{0}" -f $account)
-$bucket = Get-S3Bucket -BucketName $bucketName @session
+$bucket = Get-S3Bucket -BucketName $bucketName 
 $bucket | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 
 if(!$bucket) {
     # Create bucket
     Write-Output ("`t Creating S3 bucket for config logs...")
-    $bucket = New-S3Bucket -BucketName $bucketName -CannedACLName ([Amazon.S3.S3CannedACL]::BucketOwnerFullControl) @session
+    $bucket = New-S3Bucket -BucketName $bucketName -CannedACLName ([Amazon.S3.S3CannedACL]::BucketOwnerFullControl) 
     $bucket | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 
     # Let bucket creation take effect and propogate
@@ -82,42 +52,42 @@ if(!$bucket) {
     Write-Output ("`t Securing S3 bucket...")
 
     # Configure bucket policy
-    Add-S3PublicAccessBlock -BucketName $bucketName -PublicAccessBlockConfiguration_BlockPublicAcl $true -PublicAccessBlockConfiguration_BlockPublicPolicy $true -PublicAccessBlockConfiguration_IgnorePublicAcl $true -PublicAccessBlockConfiguration_RestrictPublicBucket $true @session
-    Write-S3BucketPolicy -BucketName $bucketName -Policy (Get-content -Raw WSUPolicy_S3BucketConfig_Global.json).Replace("{accountid}", $account) @session
-    Write-S3BucketVersioning -BucketName $bucketName -VersioningConfig_Status Enabled @session
+    Add-S3PublicAccessBlock -BucketName $bucketName -PublicAccessBlockConfiguration_BlockPublicAcl $true -PublicAccessBlockConfiguration_BlockPublicPolicy $true -PublicAccessBlockConfiguration_IgnorePublicAcl $true -PublicAccessBlockConfiguration_RestrictPublicBucket $true 
+    Write-S3BucketPolicy -BucketName $bucketName -Policy (Get-content -Raw WSUPolicy_S3BucketConfig_Global.json).Replace("{accountid}", $account) 
+    Write-S3BucketVersioning -BucketName $bucketName -VersioningConfig_Status Enabled 
 
     # Configure bucket encryption
     $s3EncryptionRule = New-Object -TypeName Amazon.S3.Model.ServerSideEncryptionRule
     $s3EncryptionDefault = New-Object -TypeName Amazon.S3.Model.ServerSideEncryptionByDefault
     $s3EncryptionDefault.ServerSideEncryptionAlgorithm = "AES256"
     $s3EncryptionRule.ServerSideEncryptionByDefault = $s3EncryptionDefault
-    Set-S3BucketEncryption -BucketName $bucketName -ServerSideEncryptionConfiguration_ServerSideEncryptionRule $s3EncryptionRule @session
+    Set-S3BucketEncryption -BucketName $bucketName -ServerSideEncryptionConfiguration_ServerSideEncryptionRule $s3EncryptionRule 
 
     Write-Output ("`t S3 Bucket created.")
 }
 
 # Build Config recorder and channel
 Write-Output ("`t Building config recorder and delivery channel...")
-$cfgRecorder = Get-CFGConfigurationRecorder @session
+$cfgRecorder = Get-CFGConfigurationRecorder 
 if(!$cfgRecorder) {
     $roleArn = ("arn:aws:iam::{0}:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig" -f $account)
-    $cfgRecorder = Write-CFGConfigurationRecorder -ConfigurationRecorderName default -RecordingGroup_AllSupported $true -RecordingGroup_IncludeGlobalResourceType $true -ConfigurationRecorder_RoleARN $roleArn @session
+    $cfgRecorder = Write-CFGConfigurationRecorder -ConfigurationRecorderName default -RecordingGroup_AllSupported $true -RecordingGroup_IncludeGlobalResourceType $true -ConfigurationRecorder_RoleARN $roleArn 
     Start-Sleep 2
     
-    $cfgRecorder = Get-CFGConfigurationRecorder -ConfigurationRecorderName default @session
+    $cfgRecorder = Get-CFGConfigurationRecorder -ConfigurationRecorderName default 
     $cfgRecorder | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
-$cfgChannel = Get-CFGDeliveryChannel @session
+$cfgChannel = Get-CFGDeliveryChannel 
 if(!$cfgChannel) {
-    $cfgChannel = Write-CFGDeliveryChannel -DeliveryChannelName default -DeliveryChannel_S3BucketName $bucketName @session
+    $cfgChannel = Write-CFGDeliveryChannel -DeliveryChannelName default -DeliveryChannel_S3BucketName $bucketName 
     $cfgChannel | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
 # Start the recorder if it is stopped
-$cfgRecorderStatus = Get-CFGConfigurationRecorderStatus @session
+$cfgRecorderStatus = Get-CFGConfigurationRecorderStatus 
 if(!$cfgRecorderStatus.Recording) {
-    Start-CFGConfigurationRecorder -ConfigurationRecorderName $cfgRecorder.Name @session
+    Start-CFGConfigurationRecorder -ConfigurationRecorderName $cfgRecorder.Name 
 }
 
 # Set the config rules
@@ -125,7 +95,7 @@ Write-Output ("`t Building config compliance rules...")
 $owner = [Amazon.ConfigService.Owner]::AWS
 Import-Csv AWSConfigRules.csv | ForEach-Object {
     try {
-        $cfgRule = Get-CFGConfigRule -ConfigRuleName $_.ConfigRuleName @session
+        $cfgRule = Get-CFGConfigRule -ConfigRuleName $_.ConfigRuleName 
     } catch {
         $cfgRule = $false
     }
@@ -140,43 +110,43 @@ Import-Csv AWSConfigRules.csv | ForEach-Object {
         }
 
         $cfgRule | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
-        Write-CFGConfigRule @cfgRule @session
+        Write-CFGConfigRule @cfgRule 
     }
 }
 
 # Enable IAM analyzer
 Write-Output ("`t Enabling IAM analyzer...")
-$analyzers = Get-IAMAAAnalyzerList @session
+$analyzers = Get-IAMAAAnalyzerList 
 if($analyzers.Count -lt 1) {
     $analyzerName = ("ConsoleAnalyzer-{0}" -f (New-Guid).Guid.ToString())
     $analyzerType = [Amazon.AccessAnalyzer.Type]::ACCOUNT
-    $analyzer = New-IAMAAAnalyzer -AnalyzerName $analyzerName -Type $analyzerType @session
+    $analyzer = New-IAMAAAnalyzer -AnalyzerName $analyzerName -Type $analyzerType 
     $analyzer | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
 # Enable Guard Duty
 Write-Output ("`t Enabling Guard Duty...")
-$guardDutyDetectors = Get-GDDetectorList @session
+$guardDutyDetectors = Get-GDDetectorList 
 if($guardDutyDetectors.Count -lt 1) {
-    New-GDDetector -Enable $true @session
+    New-GDDetector -Enable $true 
 }
 
 # Enable Security Hub
 Write-Output ("`t Enabling Security Hub...")
 try {
-    $hub = Get-SHUBHub @session
+    $hub = Get-SHUBHub 
 } catch {
-    Enable-SHUBSecurityHub @session
+    Enable-SHUBSecurityHub 
     Start-Sleep 5
 }
 
 # Enable all available standards
 $subscriptionRequest = New-Object Amazon.SecurityHub.Model.StandardsSubscriptionRequest
-$availableStandards = Get-SHUBStandard @session
+$availableStandards = Get-SHUBStandard 
 foreach($standard in $availableStandards) {
     Start-Sleep 2
     $subscriptionRequest.StandardsArn = $standard.StandardsArn
-    $hubResult = Enable-SHUBStandardsBatch -StandardsSubscriptionRequest $subscriptionRequest @session
+    $hubResult = Enable-SHUBStandardsBatch -StandardsSubscriptionRequest $subscriptionRequest 
     $hubResult | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
 }
 
@@ -184,7 +154,7 @@ foreach($standard in $availableStandards) {
 Write-Output ("`t Disabling AWS SOC managed controls...")
 Write-Output ("`t Waiting for objects to propogate...")
 Start-Sleep 15
-$enabledStandards = Get-SHUBEnabledStandard @session
+$enabledStandards = Get-SHUBEnabledStandard 
 $awsStandardSubscriptionArn = $false
 $cisStandardSubscriptionArn = $false
 $pciStandardSubscriptionArn = $false
@@ -207,13 +177,13 @@ foreach($standard in $enabledStandards) {
 }
 
 if($cisStandardSubscriptionArn) {
-    $cisControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $cisStandardSubscriptionArn @session
+    $cisControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $cisStandardSubscriptionArn 
     Import-Csv AWSCisControlsToDisable.csv | ForEach-Object {
         foreach($control in $cisControls) {
             if($_.ControlId -eq $control.ControlId -and $control.ControlStatus -eq "ENABLED") {
                 Write-Output ("`t`t Disabling {0}" -f $_.ControlId)
                 Start-Sleep 1
-                Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason @session
+                Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason 
             }
         }
     }
@@ -222,13 +192,13 @@ if($cisStandardSubscriptionArn) {
 }
 
 if($pciStandardSubscriptionArn) {
-    $pciControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $pciStandardSubscriptionArn @session
+    $pciControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $pciStandardSubscriptionArn 
     Import-Csv AWSPciControlsToDisable.csv | ForEach-Object {
         foreach($control in $pciControls) {
             if($_.ControlId -eq $control.ControlId -and $control.ControlStatus -eq "ENABLED") {
                 Write-Output ("`t`t Disabling {0}" -f $_.ControlId)
                 Start-Sleep 1
-                Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason @session
+                Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason 
             }
         }
     }
@@ -237,7 +207,7 @@ if($pciStandardSubscriptionArn) {
 }
 
 # Require EBS volumes to be encrypted
-Enable-EC2EbsEncryptionByDefault @session
+Enable-EC2EbsEncryptionByDefault 
 
 Write-Output ("`t Compliance configurations complete.")
 
