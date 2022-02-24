@@ -1,7 +1,4 @@
 param(	
-	[Alias("s")]
-    [string] $sessionName = "awsDefaultSession",
-
     [Alias("t")]
     [switch] $transcribe = $false,
 	
@@ -14,13 +11,6 @@ if ($help) {
     Write-Output ("`t Prerequisites: Powershell, aws-api-session-management, included setup.ps1")
     Write-Output ("`t ")
     Write-Output ("`t Parameters:")
-    Write-Output ("`t ")
-    Write-Output ("`t sessionName")
-    Write-Output ("`t     The name of the global variable that stores the MFA validated AWS session.")
-    Write-Output ("`t     Default: {0}" -f $sessionName)
-    Write-Output ("`t     Alias: s")
-    Write-Output ("`t     Example: .\{0}.ps1 -sessionName {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
-    Write-Output ("`t     Example: .\{0}.ps1 -s {1}" -f $MyInvocation.MyCommand.Name, $sessionName)
     Write-Output ("`t ")
     Write-Output ("`t transcribe")
     Write-Output ("`t     If set, creates a transcript of the script.")
@@ -44,47 +34,25 @@ if($transcribe) {
     Start-Transcript -Path $transcriptName
 }
 
-# Retrieve specified AWS STS session
-$globalSession = $null
-$expression = ("`$globalSession = `$global:{0}" -f $sessionName)
-Invoke-Expression -Command $expression
-
-# If the session is null, return false
-if($globalSession -eq $null) {
-    Write-Output ("`t Failed to retrieve specified AWS session.")
-    if($transcribe) {
-        Stop-Transcript
-    }
-
-    return $false
-}
-
-# Creating session hashtable for parameter splatting
-$session = @{
-    'AccessKey'    = $globalSession.AccessKeyId;
-    'SecretKey'    = $globalSession.SecretAccessKey;
-    'SessionToken' = $globalSession.SessionToken;
-}
-
 Write-Output ("`t Creating baseline policy objects...")
 
 # Retrieve account ID
-$accountid = (Get-STSCallerIdentity @session).Account
+$accountid = (Get-STSCallerIdentity ).Account
 
 # Create WSU policies
 # Get the list of existing policies
 $policies = @()
-$policyList = Get-IAMPolicyList -Scope Local @session
+$policyList = Get-IAMPolicyList -Scope Local 
 Import-Csv WSUIamPolicies.csv | ForEach-Object {
     $policy = $_
     if($policy.PolicyDocument.Length -gt 0) {
         if(($policyList | Where-Object {$_.PolicyName -eq $policy.PolicyName}).Count -eq 0) {
-            $temp = New-IAMPolicy -PolicyName $policy.PolicyName -PolicyDocument (Get-content -Raw $policy.PolicyDocument) @session -Force
+            $temp = New-IAMPolicy -PolicyName $policy.PolicyName -PolicyDocument (Get-content -Raw $policy.PolicyDocument)  -Force
             $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
             $policies = $policies + $temp
         }
     } elseif ($policy.PolicyArn.Length -gt 0) {
-        $temp = Get-IAMPolicy -PolicyArn $policy.PolicyArn @session
+        $temp = Get-IAMPolicy -PolicyArn $policy.PolicyArn 
         $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
         $policies = $policies + $temp
     }
@@ -93,12 +61,12 @@ Import-Csv WSUIamPolicies.csv | ForEach-Object {
 # Create groups
 # Gets the list of groups
 $groups = @()
-$groupList = Get-IAMGroupList @session
+$groupList = Get-IAMGroupList 
 Import-Csv WSUIamGroups.csv | ForEach-Object {
     $group = $_
 
     if(($groupList | Where-Object {$_.GroupName -eq $group.GroupName}).Count -eq 0) {
-        $temp = New-IAMGroup -GroupName $group.GroupName @session -Force
+        $temp = New-IAMGroup -GroupName $group.GroupName  -Force
         $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
         $groups = $groups + $temp
     }
@@ -107,12 +75,12 @@ Import-Csv WSUIamGroups.csv | ForEach-Object {
 # Create service-linked roles
 # Gets the list of roles
 $roles = @()
-$roleList = Get-IAMRoleList @session
+$roleList = Get-IAMRoleList 
 Import-Csv WSUIamRoles.csv | ForEach-Object {
     $role = $_
 
     if(($roleList | Where-Object {$_.RoleName -eq $role.RoleName}).Count -eq 0) {
-        $temp = New-IAMRole -RoleName $role.RoleName -AssumeRolePolicyDocument (Get-content -Raw $role.AssumeRolePolicyDocument).Replace("{accountid}", $accountid) @session
+        $temp = New-IAMRole -RoleName $role.RoleName -AssumeRolePolicyDocument (Get-content -Raw $role.AssumeRolePolicyDocument).Replace("{accountid}", $accountid) 
         $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
         $roles = $roles + $temp
     }
@@ -122,7 +90,7 @@ Import-Csv WSUIamServiceLinkedRoles.csv | ForEach-Object {
     $role = $_
 
     if(($roleList | Where-Object {$_.RoleName -eq $role.RoleName}).Count -eq 0) {
-        $temp = New-IAMServiceLinkedRole -AWSServiceName $role.AWSServiceName @session
+        $temp = New-IAMServiceLinkedRole -AWSServiceName $role.AWSServiceName 
         $temp | Format-Table -Property @{Expression="            "},* -Autosize -Hidetableheaders
         $roles = $roles + $temp
     }
@@ -139,7 +107,7 @@ Import-Csv WSUIamGroupPolicy.csv | ForEach-Object {
     foreach($group in $groups) {
         foreach($policy in $policies) {
             if($groupPolicy.GroupName -eq $group.GroupName -and $groupPolicy.PolicyName -eq $policy.PolicyName) {
-                Register-IAMGroupPolicy -GroupName $group.GroupName -PolicyArn $policy.Arn @session -Force
+                Register-IAMGroupPolicy -GroupName $group.GroupName -PolicyArn $policy.Arn  -Force
             }
         }
     }
@@ -152,7 +120,7 @@ Import-Csv WSUIamRolePolicy.csv | ForEach-Object {
         foreach($policy in $policies) {
             if($rolePolicy.RoleName -eq $role.RoleName -and $rolePolicy.PolicyName -eq $policy.PolicyName) {
                 #Write-Host "Hit"
-                Register-IAMRolePolicy -RoleName $rolePolicy.RoleName -PolicyArn $rolePolicy.PolicyArn.Replace("<accountId>", $accountid) @session
+                Register-IAMRolePolicy -RoleName $rolePolicy.RoleName -PolicyArn $rolePolicy.PolicyArn.Replace("<accountId>", $accountid) 
             }
         }
     }
