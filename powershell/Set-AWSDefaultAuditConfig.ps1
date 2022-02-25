@@ -1,5 +1,8 @@
 param(	
-    [Alias("s")]
+    [Alias("c")]
+    [string] $accountType = "",
+	
+	[Alias("s")]
     [string] $sessionName = "awsDefaultSession",
 
     [Alias("t")]
@@ -14,6 +17,13 @@ if ($help) {
     Write-Output ("`t Prerequisites: Powershell, aws-api-session-management, included setup.ps1")
     Write-Output ("`t ")
     Write-Output ("`t Parameters:")
+    Write-Output ("`t ")
+	Write-Output ("`t accountType")
+    Write-Output ("`t     The type of AWS account, e.g., billing, peering, shared, isolated")
+    Write-Output ("`t     Default: {0}" -f $sessionName)
+    Write-Output ("`t     Alias: c")
+    Write-Output ("`t     Example: .\{0}.ps1 -accountType {1}" -f $MyInvocation.MyCommand.Name, $accountType)
+    Write-Output ("`t     Example: .\{0}.ps1 -a {1}" -f $MyInvocation.MyCommand.Name, $accountType)
     Write-Output ("`t ")
     Write-Output ("`t sessionName")
     Write-Output ("`t     The name of the global variable that stores the MFA validated AWS session.")
@@ -30,6 +40,13 @@ if ($help) {
     Write-Output ("`t     Example: .\{0}.ps1 -t {1}" -f $MyInvocation.MyCommand.Name, $transcribe)
 
     return $false
+}
+
+# Prompt for account type if not specified
+$accountType = $accountType.ToLower()
+while ($accountType -ne "billing" -AND $accountType -ne "peering" -AND $accountType -ne "peering" -AND $accountType -ne "isolated") {
+	$accountType = Read-Host "Enter the type of account (billing, peering, shared, isolated):"
+	$accountType = $accountType.ToLower()
 }
 
 # navigate to library root
@@ -123,7 +140,18 @@ if(!$cfgRecorderStatus.Recording) {
 # Set the config rules
 Write-Output ("`t Building config compliance rules...")
 $owner = [Amazon.ConfigService.Owner]::AWS
-Import-Csv AWSConfigRules.csv | ForEach-Object {
+
+if($accountType -eq "shared") {
+	$importedConfigRules = Import-Csv AWSConfigRules-Shared.csv
+} elseif($accountType -eq "billing") {
+	$importedConfigRules = Import-Csv AWSConfigRules-Billing.csv
+} elseif($accountType -eq "peering") {
+	$importedConfigRules = Import-Csv AWSConfigRules-Peering.csv
+} elseif($accountType -eq "isolated") {
+	$importedConfigRules = Import-Csv AWSConfigRules-Isolated.csv
+}
+
+$importedConfigRules | ForEach-Object {
     try {
         $cfgRule = Get-CFGConfigRule -ConfigRuleName $_.ConfigRuleName @session
     } catch {
@@ -208,7 +236,18 @@ foreach($standard in $enabledStandards) {
 
 if($cisStandardSubscriptionArn) {
     $cisControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $cisStandardSubscriptionArn @session
-    Import-Csv AWSCisControlsToDisable.csv | ForEach-Object {
+	
+	if($accountType -eq "shared") {
+		$importedCisControls = Import-Csv AWSCisControlsToDisable-Shared.csv
+	} elseif($accountType -eq "billing") {
+		$importedCisControls = Import-Csv AWSCisControlsToDisable-Billing.csv
+	} elseif($accountType -eq "peering") {
+		$importedCisControls = Import-Csv AWSCisControlsToDisable-Peering.csv
+	} elseif($accountType -eq "isolated") {
+		$importedCisControls = Import-Csv AWSCisControlsToDisable-Isolated.csv
+	}
+
+    $importedCisControls | ForEach-Object {
         foreach($control in $cisControls) {
             if($_.ControlId -eq $control.ControlId -and $control.ControlStatus -eq "ENABLED") {
                 Write-Output ("`t`t Disabling {0}" -f $_.ControlId)

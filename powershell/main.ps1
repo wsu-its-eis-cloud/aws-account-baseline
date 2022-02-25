@@ -1,6 +1,9 @@
 param(
     [Alias("a")]
     [string] $accountName = "",
+	
+	[Alias("c")]
+    [string] $accountType = "",
 
     [Alias("s")]
     [string] $sessionName = "awsDefaultSession",
@@ -25,6 +28,13 @@ if ($help) {
     Write-Output ("`t     Example: .\{0}.ps1 -accountName {1}" -f $MyInvocation.MyCommand.Name, $accountName)
     Write-Output ("`t     Example: .\{0}.ps1 -a {1}" -f $MyInvocation.MyCommand.Name, $accountName)
     Write-Output ("`t ")
+	Write-Output ("`t accountType")
+    Write-Output ("`t     The type of AWS account, e.g., billing, peering, shared, isolated")
+    Write-Output ("`t     Default: {0}" -f $sessionName)
+    Write-Output ("`t     Alias: c")
+    Write-Output ("`t     Example: .\{0}.ps1 -accountType {1}" -f $MyInvocation.MyCommand.Name, $accountType)
+    Write-Output ("`t     Example: .\{0}.ps1 -a {1}" -f $MyInvocation.MyCommand.Name, $accountType)
+    Write-Output ("`t ")
     Write-Output ("`t sessionName")
     Write-Output ("`t     The name of the global variable that stores the MFA validated AWS session.")
     Write-Output ("`t     Default: {0}" -f $sessionName)
@@ -47,6 +57,13 @@ if ($accountName -eq "") {
 	$accountName = Read-Host "Enter the account name, e.g., its-aws-demo"
 }
 $accountName = $accountName.ToLower()
+
+# Prompt for account type if not specified
+$accountType = $accountType.ToLower()
+while ($accountType -ne "billing" -AND $accountType -ne "peering" -AND $accountType -ne "peering" -AND $accountType -ne "isolated") {
+	$accountType = Read-Host "Enter the type of account (billing, peering, shared, isolated):"
+	$accountType = $accountType.ToLower()
+}
 
 # navigate to library root
 cd $PSScriptRoot
@@ -86,15 +103,16 @@ Write-Output ("")
 
 Write-Output ("")
 Write-Output ("Configuring compliance policies.")
-.\Set-AWSDefaultAuditConfig.ps1
+.\Set-AWSDefaultAuditConfig.ps1 -accountType $accountType
 Write-Output ("Compliance policy set.")
 Write-Output ("")
 
-Write-Output ("")
-Write-Output ("Enabling dynamic service access.")
-.\Enable-AWSDynamicServiceAccess.ps1
-Write-Output ("Dynamic service access set.")
-Write-Output ("")
+# Soft-deprecation of dynamic access functionality - probably no further need.
+#Write-Output ("")
+#Write-Output ("Enabling dynamic service access.")
+#.\Enable-AWSDynamicServiceAccess.ps1
+#Write-Output ("Dynamic service access set.")
+#Write-Output ("")
 
 # Build final checklist
 $checklist = Get-Content -Raw _ChecklistTemplate.csv
