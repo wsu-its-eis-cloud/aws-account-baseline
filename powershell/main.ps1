@@ -95,11 +95,12 @@ Write-Output ("Setting the account alias.")
 Write-Output ("Alias set.")
 Write-Output ("")
 
-Write-Output ("")
-Write-Output ("Creating default IAM objects.")
-.\Create-AWSDefaultIAMObjects.ps1
-Write-Output ("IAM Objects set.")
-Write-Output ("")
+# Soft-deprecation of IAM objects as we've moved to SSO.
+#Write-Output ("")
+#Write-Output ("Creating default IAM objects.")
+#.\Create-AWSDefaultIAMObjects.ps1
+#Write-Output ("IAM Objects set.")
+#Write-Output ("")
 
 Write-Output ("")
 Write-Output ("Configuring compliance policies.")

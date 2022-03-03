@@ -234,6 +234,24 @@ foreach($standard in $enabledStandards) {
     }
 }
 
+if($awsStandardSubscriptionArn) {
+    $awsControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $awsStandardSubscriptionArn @session
+	
+	$importedAwsControls = Import-Csv AWSControlsToDisable.csv
+
+    $importedAwsControls | ForEach-Object {
+        foreach($control in $awsControls) {
+            if($_.ControlId -eq $control.ControlId -and $control.ControlStatus -eq "ENABLED") {
+                Write-Output ("`t`t Disabling {0}" -f $_.ControlId)
+                Start-Sleep 1
+                Update-SHUBStandardsControl -StandardsControlArn $control.StandardsControlArn -ControlStatus DISABLED -DisabledReason $_.DisabledReason @session
+            }
+        }
+    }
+} else {
+    Write-Output ("`t AWS Foundational Standard not enabled.")
+}
+
 if($cisStandardSubscriptionArn) {
     $cisControls = Get-SHUBStandardsControl -StandardsSubscriptionArn $cisStandardSubscriptionArn @session
 	

@@ -1,0 +1,2 @@
+"ControlId","DisabledReason"
+"IAM.6","Root uses virtual MFA, and this account is part of the Managed OU in AWS organizations which denies all root permissions in the account."
