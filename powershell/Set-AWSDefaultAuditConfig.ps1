@@ -44,7 +44,7 @@ if ($help) {
 
 # Prompt for account type if not specified
 $accountType = $accountType.ToLower()
-while ($accountType -ne "billing" -AND $accountType -ne "peering" -AND $accountType -ne "peering" -AND $accountType -ne "isolated") {
+while ($accountType -ne "billing" -AND $accountType -ne "peering" -AND $accountType -ne "shared" -AND $accountType -ne "isolated") {
 	$accountType = Read-Host "Enter the type of account (billing, peering, shared, isolated):"
 	$accountType = $accountType.ToLower()
 }
